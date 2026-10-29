@@ -6,12 +6,6 @@ using QRCoder;
 
 namespace AbsClean.Api.Infrastructure;
 
-/// <summary>Adresse publique du site (section « Site ») : base des liens de parrainage et du lien de validation. Domaine À FOURNIR.</summary>
-public sealed class SiteOptions
-{
-    public string Url { get; set; } = "http://localhost:4200";
-}
-
 public enum ResultatValidation { Validee, Introuvable, JetonInvalide, DejaValidee }
 
 /// <summary>Parrainage (CAHIER-DES-CHARGES.md §9 bis) : liens, QR codes, validation de l'intervention par le gérant.</summary>
@@ -22,11 +16,13 @@ public sealed class ServiceParrainage(
     IOptions<SiteOptions> site,
     ILogger<ServiceParrainage> log)
 {
-    private string Base => site.Value.Url.TrimEnd('/');
+    public string Lien(string code) => $"{site.Value.Base}/devis?parrain={Uri.EscapeDataString(code)}";
 
-    public string Lien(string code) => $"{Base}/devis?parrain={Uri.EscapeDataString(code)}";
+    /// <summary>QR code en PNG servi par l'API, pour les e-mails ; suppose /api servi sur le domaine du site (image Docker unique).</summary>
+    public string LienQrPng(string code) => $"{site.Value.Base}/api/parrainage/{Uri.EscapeDataString(code)}/qr.png";
 
-    public string LienValidation(int demandeId, string jeton) => $"{Base}/admin/intervention?demande={demandeId}&jeton={Uri.EscapeDataString(jeton)}";
+    public string LienValidation(int demandeId, string jeton) =>
+        $"{site.Value.Base}/admin/intervention?demande={demandeId}&jeton={Uri.EscapeDataString(jeton)}";
 
     public Task<bool> ExisteAsync(string code, CancellationToken ct) =>
         db.Demandes.AnyAsync(d => d.CodeParrainPersonnel == code, ct);
@@ -38,7 +34,7 @@ public sealed class ServiceParrainage(
         return new SvgQRCode(donnees).GetGraphic(8, "#15345F", "#FFFFFF", true, SvgQRCode.SizingMode.ViewBoxAttribute);
     }
 
-    /// <summary>Même QR code en PNG, pour les e-mails (la plupart des messageries n'affichent pas le SVG).</summary>
+    /// <summary>Même QR code en PNG (la plupart des messageries n'affichent pas le SVG).</summary>
     public byte[] QrPng(string code)
     {
         using var donnees = Generer(code);
@@ -54,59 +50,61 @@ public sealed class ServiceParrainage(
     /// <summary>
     /// Le gérant confirme la première intervention d'un client (lien à usage unique reçu par e-mail).
     /// Si ce client a été parrainé, la remise du parrain est activée et le parrain est prévenu.
+    /// Chaque étape est une mise à jour conditionnelle : un double clic ne valide (et ne prévient) qu'une fois.
     /// </summary>
     public async Task<ResultatValidation> ValiderInterventionAsync(int demandeId, string? jeton, CancellationToken ct)
     {
-        var demande = await db.Demandes.FirstOrDefaultAsync(d => d.Id == demandeId, ct);
-        if (demande is null) return ResultatValidation.Introuvable;
-        if (demande.InterventionRealiseeLe is not null) return ResultatValidation.DejaValidee;
-        if (string.IsNullOrEmpty(jeton) || demande.JetonInterventionHash is null
-            || !CryptographicEquals(demande.JetonInterventionHash, DemandeStore.Empreinte(jeton)))
-            return ResultatValidation.JetonInvalide;
+        if (string.IsNullOrEmpty(jeton))
+            return await RaisonDuRefusAsync(demandeId, ct);
 
+        var empreinte = JetonIntervention.Empreinte(jeton);
         var maintenant = horloge.GetUtcNow().UtcDateTime;
-        demande.InterventionRealiseeLe = maintenant;
-        demande.JetonInterventionHash = null;
 
-        var parrainage = await db.Parrainages.Include(p => p.Parrain)
-            .FirstOrDefaultAsync(p => p.FilleulId == demande.Id && p.Statut == StatutParrainage.EnAttente, ct);
-        if (parrainage is not null)
-        {
-            parrainage.Statut = StatutParrainage.Valide;
-            parrainage.ValideLe = maintenant;
-        }
-        await db.SaveChangesAsync(ct);
-        log.LogInformation("Intervention réalisée pour {Numero}.", demande.Numero);
+        var validee = await db.Demandes
+            .Where(d => d.Id == demandeId && d.InterventionRealiseeLe == null && d.JetonInterventionHash == empreinte)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.InterventionRealiseeLe, maintenant)
+                .SetProperty(d => d.JetonInterventionHash, (string?)null), ct);
+        if (validee == 0)
+            return await RaisonDuRefusAsync(demandeId, ct);
 
-        if (parrainage is not null)
-            await PrevenirParrainAsync(parrainage.Parrain, demande);
+        log.LogInformation("Intervention réalisée pour la demande {Id}.", demandeId);
+
+        var remiseActivee = await db.Parrainages
+            .Where(p => p.FilleulId == demandeId && p.Statut == StatutParrainage.EnAttente)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.Statut, StatutParrainage.Valide)
+                .SetProperty(p => p.ValideLe, maintenant), ct);
+        if (remiseActivee > 0)
+            await PrevenirParrainAsync(demandeId, ct);
 
         return ResultatValidation.Validee;
     }
 
-    private async Task PrevenirParrainAsync(Demande parrain, Demande filleul)
+    private async Task<ResultatValidation> RaisonDuRefusAsync(int demandeId, CancellationToken ct)
     {
+        var dejaValidee = await db.Demandes.Where(d => d.Id == demandeId).Select(d => (bool?)(d.InterventionRealiseeLe != null)).FirstOrDefaultAsync(ct);
+        return dejaValidee switch
+        {
+            null => ResultatValidation.Introuvable,
+            true => ResultatValidation.DejaValidee,
+            false => ResultatValidation.JetonInvalide,
+        };
+    }
+
+    private async Task PrevenirParrainAsync(int filleulId, CancellationToken ct)
+    {
+        var parrainage = await db.Parrainages.AsNoTracking()
+            .Include(p => p.Parrain)
+            .Include(p => p.Filleul)
+            .FirstAsync(p => p.FilleulId == filleulId, ct);
         try
         {
-            await email.EnvoyerAsync(new EmailSortant(
-                parrain.Email,
-                $"{parrain.Prenom} {parrain.Nom}",
-                $"Votre proche {filleul.Prenom} est devenu client : −10 % sur votre prochaine intervention",
-                $"""
-                <div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#15345F;max-width:560px">
-                <p>Bonjour {System.Net.WebUtility.HtmlEncode(parrain.Prenom)},</p>
-                <p>Votre proche {System.Net.WebUtility.HtmlEncode(filleul.Prenom)} est devenu client : <strong>−10 % sur votre prochaine intervention</strong>.</p>
-                <p>Merci pour votre confiance,<br>ABS clean</p>
-                </div>
-                """), CancellationToken.None);
+            await email.EnvoyerAsync(ModelesEmail.RemiseParrain(parrainage.Parrain, parrainage.Filleul), CancellationToken.None);
         }
         catch (Exception e)
         {
-            log.LogError(e, "E-mail au parrain {Code} non envoyé (remise bien activée en base).", parrain.CodeParrainPersonnel);
+            log.LogError(e, "E-mail au parrain {Code} non envoyé (remise bien activée en base).", parrainage.Parrain.CodeParrainPersonnel);
         }
     }
-
-    private static bool CryptographicEquals(string a, string b) =>
-        System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
-            System.Text.Encoding.ASCII.GetBytes(a), System.Text.Encoding.ASCII.GetBytes(b));
 }
