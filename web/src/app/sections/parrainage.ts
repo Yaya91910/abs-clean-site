@@ -23,6 +23,7 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@a
               <li><span class="ref-n" aria-hidden="true">2</span><span>Votre proche fait son devis avec votre code.</span></li>
               <li><span class="ref-n" aria-hidden="true">3</span><span>Dès sa première intervention, vos −10&nbsp;% sont activés.</span></li>
             </ol>
+            <a class="conditions" href="/parrainage/conditions">Conditions du parrainage</a>
             <div class="ref-share">
               <button type="button" class="share-btn primary" (click)="copier()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8" /><path d="M16 8V6.5A2.5 2.5 0 0013.5 4h-7A2.5 2.5 0 004 6.5v7A2.5 2.5 0 006.5 16H8" stroke="currentColor" stroke-width="1.8" /></svg>
@@ -71,6 +72,7 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@a
     .ref-steps li { display: flex; align-items: center; gap: 12px; font-size: 15px; color: #3C4A5C; }
     .ref-n { width: 28px; height: 28px; border-radius: 999px; background: #E8F1FF; color: var(--accent); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .ref-share { display: flex; flex-wrap: wrap; gap: 10px; }
+    .conditions { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
     .share-btn { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid #D7E0EA; background: rgba(255, 255, 255, 0.9); color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
     .share-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -12px rgba(21, 52, 95, 0.4); background: #FFFFFF; }
     .share-btn.primary { background: linear-gradient(135deg, var(--accent), #1F55B5); color: #FFFFFF; border-color: transparent; box-shadow: 0 12px 22px -12px var(--accent-shadow); }

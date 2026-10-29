@@ -14,47 +14,62 @@ import { Reseaux } from './sections/reseaux';
 import { Footer } from './sections/footer';
 import { AdminIntervention } from './admin/intervention';
 import { TarifsApi } from './core/tarifs-api';
+import { MentionsLegales } from './pages/mentions-legales';
+import { Confidentialite } from './pages/confidentialite';
+import { ConditionsParrainage } from './pages/conditions-parrainage';
 
 @Component({
   selector: 'abs-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Header, Hero, APropos, AvantApres, Prestations, Tarifs, Processus, Faq, Devis, Cta, Parrainage, Reseaux, Footer, AdminIntervention],
+  imports: [Header, Hero, APropos, AvantApres, Prestations, Tarifs, Processus, Faq, Devis, Cta, Parrainage, Reseaux, Footer, AdminIntervention, MentionsLegales, Confidentialite, ConditionsParrainage],
   styleUrl: './app.scss',
   template: `
-    @if (pageAdmin) {
-      <abs-admin-intervention />
-    } @else {
-      <div class="page">
-        <div class="dots" aria-hidden="true"></div>
-        <div class="halo a" aria-hidden="true"></div>
-        <div class="halo b" aria-hidden="true"></div>
-        <div class="halo c" aria-hidden="true"></div>
+    @switch (page) {
+      @case ('/admin/intervention') {
+        <abs-admin-intervention />
+      }
+      @case ('/mentions-legales') {
+        <abs-mentions-legales />
+      }
+      @case ('/confidentialite') {
+        <abs-confidentialite />
+      }
+      @case ('/parrainage/conditions') {
+        <abs-conditions-parrainage />
+      }
+      @default {
+        <div class="page">
+          <div class="dots" aria-hidden="true"></div>
+          <div class="halo a" aria-hidden="true"></div>
+          <div class="halo b" aria-hidden="true"></div>
+          <div class="halo c" aria-hidden="true"></div>
 
-        <div class="content">
-          <abs-header />
-          <main>
-            <abs-hero />
-            <abs-a-propos />
-            <abs-avant-apres />
-            <abs-prestations />
-            <abs-tarifs />
-            <abs-processus />
-            <abs-faq />
-            <abs-devis />
-            <abs-cta />
-            <abs-parrainage />
-            <abs-reseaux />
-          </main>
-          <abs-footer />
+          <div class="content">
+            <abs-header />
+            <main>
+              <abs-hero />
+              <abs-a-propos />
+              <abs-avant-apres />
+              <abs-prestations />
+              <abs-tarifs />
+              <abs-processus />
+              <abs-faq />
+              <abs-devis />
+              <abs-cta />
+              <abs-parrainage />
+              <abs-reseaux />
+            </main>
+            <abs-footer />
+          </div>
         </div>
-      </div>
+      }
     }
   `,
 })
 export class App {
   private readonly document = inject(DOCUMENT);
-  /** Lien de validation du gérant (e-mail) : page dédiée, hors du site vitrine. */
-  protected readonly pageAdmin = this.document.location.pathname === '/admin/intervention';
+  /** Pages hors du site vitrine : validation du gérant (lien de son e-mail) et pages légales. */
+  protected readonly page = this.document.location.pathname.replace(/\/+$/, '') || '/';
 
   constructor() {
     // Lien de parrainage https://{domaine}/devis?parrain=CODE : on amène directement au formulaire,
