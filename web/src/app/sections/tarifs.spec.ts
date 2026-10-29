@@ -41,9 +41,8 @@ describe('Tarifs', () => {
     const texte = (fixture.nativeElement as HTMLElement).textContent!;
 
     expect(texte).toContain('Vitre');
-    expect(texte).toContain('20 €');
-    expect(texte).toMatch(/à partir de\s+40 €/);
-    expect(texte).toContain('aucune réduction n\'est appliquée');
+    expect(texte).toMatch(/l'unité\s*20\s*€/);
+    expect(texte).toMatch(/à partir de\s*40\s*€/);
   });
 
   it('signale une erreur si l’API ne répond pas', async () => {

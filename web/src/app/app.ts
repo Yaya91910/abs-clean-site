@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DOCUMENT, afterNextRender, inject } from '@angular/core';
 import { Header } from './sections/header';
 import { Hero } from './sections/hero';
 import { APropos } from './sections/a-propos';
@@ -45,4 +45,12 @@ import { Footer } from './sections/footer';
     </div>
   `,
 })
-export class App {}
+export class App {
+  constructor() {
+    // Lien de parrainage https://{domaine}/devis?parrain=CODE : on amène directement au formulaire.
+    const document = inject(DOCUMENT);
+    afterNextRender(() => {
+      if (document.location.pathname === '/devis') document.getElementById('devis')?.scrollIntoView();
+    });
+  }
+}
