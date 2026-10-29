@@ -35,4 +35,13 @@ public sealed class Demande
     public bool EmailClientEnvoye { get; set; }
     public bool EmailGerantEnvoye { get; set; }
     public bool SmsEnvoye { get; set; }
+
+    // Parrainage (§9 bis)
+    public string CodeParrainPersonnel { get; set; } = "";
+    public string? CodeParrainUtilise { get; set; }
+    public int? ParrainId { get; set; }
+
+    // Validation de l'intervention par le gérant (lien à usage unique ; seule l'empreinte du jeton est stockée)
+    public string? JetonInterventionHash { get; set; }
+    public DateTime? InterventionRealiseeLe { get; set; }
 }

@@ -10,7 +10,7 @@ public static class DemandeEndpoints
 
     public static IEndpointRouteBuilder MapDemandeEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/demandes", async (NouvelleDemande demande, DemandeStore store, NotificationsDemande notifications, ILogger<NouvelleDemande> log, CancellationToken ct) =>
+        app.MapPost("/api/demandes", async (NouvelleDemande demande, DemandeStore store, NotificationsDemande notifications, ServiceParrainage parrainage, ILogger<NouvelleDemande> log, CancellationToken ct) =>
         {
             // Honeypot rempli : un robot. Réponse volontairement générique.
             if (demande.HoneypotRempli)
@@ -25,13 +25,14 @@ public static class DemandeEndpoints
 
             // Le calcul fait foi côté serveur (§7).
             var devis = CalculDevis.Calculer(demande.Quantites, demande.Profil, demande.Frequence);
-            var enregistree = await store.EnregistrerAsync(demande, devis, ct);
+            var resultat = await store.EnregistrerAsync(demande, devis, ct);
+            var enregistree = resultat.Demande;
 
             log.LogInformation("Demande {Numero} enregistrée ({Total} €).", enregistree.Numero, enregistree.Total);
 
             // La demande est enregistrée : les envois ne doivent plus pouvoir faire échouer la réponse,
             // ni être interrompus si le navigateur se déconnecte entre-temps.
-            await notifications.EnvoyerAsync(enregistree, CancellationToken.None);
+            await notifications.EnvoyerAsync(resultat, CancellationToken.None);
 
             return Results.Created((string?)null, new
             {
@@ -39,6 +40,15 @@ public static class DemandeEndpoints
                 total = enregistree.Total,
                 lignes = devis.Lignes,
                 mention = devis.Mention,
+                codeParrain = enregistree.CodeParrainPersonnel,
+                lienParrainage = parrainage.Lien(enregistree.CodeParrainPersonnel),
+                // Sort du code saisi : l'envoi n'est jamais bloqué, mais le client sait s'il a été pris en compte.
+                codeParrainageSaisi = resultat.CodeParrain switch
+                {
+                    CodeParrainSaisi.Aucun => null,
+                    CodeParrainSaisi.Applique => "applique",
+                    _ => "ignore",
+                },
             });
         })
         .RequireRateLimiting(PolitiqueDebit);

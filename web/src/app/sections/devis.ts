@@ -59,6 +59,14 @@ import { DevisModal } from './devis-modal';
             <input id="code-parrain" class="field code" type="text" placeholder="ex. ABS-MARIE7" autocomplete="off" aria-describedby="code-parrain-aide"
               [value]="store.codeParrain()" (change)="store.definirCodeParrain($any($event.target).value)" />
             <span id="code-parrain-aide" class="aide">Un proche vous a recommandé ? Saisissez son code : il sera remercié.</span>
+            @switch (store.codeReconnu()) {
+              @case (true) {
+                <span class="aide code-ok" role="status">✓ Code reconnu : votre proche sera remercié.</span>
+              }
+              @case (false) {
+                <span class="aide" role="status">Code inconnu : il ne sera pas pris en compte, mais vous pouvez envoyer votre demande.</span>
+              }
+            }
           </div>
 
           <div class="estimate" aria-live="polite">
@@ -102,6 +110,7 @@ import { DevisModal } from './devis-modal';
     .champ .field { max-width: 320px; }
     .field.code { text-transform: uppercase; letter-spacing: 0.06em; }
     .facultatif { font-weight: 500; color: var(--text-soft); }
+    .code-ok { color: #157A4E; font-weight: 600; }
     .aide { font-size: 12px; color: var(--text-soft); max-width: 380px; line-height: 1.5; }
 
     .estimate { width: 100%; padding: 20px; border-radius: 18px; background: linear-gradient(135deg, rgba(76, 155, 224, 0.16), rgba(125, 182, 234, 0.14)); border: 1px solid rgba(76, 155, 224, 0.35); display: flex; flex-direction: column; align-items: center; gap: 6px; }

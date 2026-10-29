@@ -7,12 +7,20 @@ namespace AbsClean.Api.Infrastructure;
 public sealed class AbsCleanDb(DbContextOptions<AbsCleanDb> options) : DbContext(options)
 {
     public DbSet<Demande> Demandes => Set<Demande>();
+    public DbSet<Parrainage> Parrainages => Set<Parrainage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var demande = modelBuilder.Entity<Demande>();
 
         demande.HasIndex(d => d.Numero).IsUnique();
+        demande.HasIndex(d => d.CodeParrainPersonnel).IsUnique();
+        demande.Property(d => d.CodeParrainPersonnel).HasMaxLength(16);
+        demande.Property(d => d.CodeParrainUtilise).HasMaxLength(16);
+        demande.Property(d => d.JetonInterventionHash).HasMaxLength(64);
+        demande.HasOne<Demande>().WithMany().HasForeignKey(d => d.ParrainId).OnDelete(DeleteBehavior.Restrict);
+        demande.HasIndex(d => d.Telephone);
+        demande.HasIndex(d => d.Email);
         demande.Property(d => d.Numero).HasMaxLength(20);
 
         demande.Property(d => d.Profil).HasConversion<string>().HasMaxLength(20);
@@ -40,5 +48,12 @@ public sealed class AbsCleanDb(DbContextOptions<AbsCleanDb> options) : DbContext
                     c => c.Aggregate(0, (h, v) => HashCode.Combine(h, v)),
                     c => c.ToList()))
             .HasMaxLength(100);
+
+        var parrainage = modelBuilder.Entity<Parrainage>();
+        parrainage.Property(p => p.Statut).HasConversion<string>().HasMaxLength(20);
+        parrainage.HasOne(p => p.Parrain).WithMany().HasForeignKey(p => p.ParrainId).OnDelete(DeleteBehavior.Restrict);
+        parrainage.HasOne(p => p.Filleul).WithMany().HasForeignKey(p => p.FilleulId).OnDelete(DeleteBehavior.Restrict);
+        // Un client (une demande) ne peut avoir qu'un seul parrain.
+        parrainage.HasIndex(p => p.FilleulId).IsUnique();
     }
 }

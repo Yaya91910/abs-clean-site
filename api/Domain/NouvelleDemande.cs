@@ -23,6 +23,7 @@ public sealed record NouvelleDemande(
     string? Acces = null,
     IReadOnlyList<Creneau>? Creneaux = null,
     string? Commentaire = null,
+    string? CodeParrainage = null,
     bool Consentement = false,
     string? SiteWeb = null)
 {

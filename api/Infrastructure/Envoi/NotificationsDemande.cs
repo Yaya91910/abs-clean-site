@@ -15,14 +15,17 @@ public sealed class NotificationsDemande(
     IEnvoiSms sms,
     IOptions<EmailOptions> emailOptions,
     IOptions<SmsOptions> smsOptions,
+    IOptions<SiteOptions> site,
+    ServiceParrainage parrainage,
     ILogger<NotificationsDemande> log)
 {
-    public async Task EnvoyerAsync(Demande demande, CancellationToken ct)
+    public async Task EnvoyerAsync(DemandeEnregistree enregistree, CancellationToken ct)
     {
+        var demande = enregistree.Demande;
         PieceJointe? devisPdf = null;
         try
         {
-            devisPdf = new PieceJointe($"Devis-{demande.Numero}.pdf", pdf.Generer(demande));
+            devisPdf = new PieceJointe($"Devis-{demande.Numero}.pdf", pdf.Generer(demande, parrainage.QrSvg(demande.CodeParrainPersonnel)));
         }
         catch (Exception e)
         {
@@ -30,12 +33,13 @@ public sealed class NotificationsDemande(
         }
 
         demande.EmailClientEnvoye = await TenterAsync("e-mail client", demande, () =>
-            email.EnvoyerAsync(EmailClient(demande, devisPdf), ct));
+            email.EnvoyerAsync(EmailClient(demande, devisPdf, parrainage.Lien(demande.CodeParrainPersonnel), QrPng(demande)), ct));
 
         var gerant = emailOptions.Value.GerantTo;
         demande.EmailGerantEnvoye = string.IsNullOrWhiteSpace(gerant)
             ? Absent("e-mail gérant", "Email__GerantTo", demande)
-            : await TenterAsync("e-mail gérant", demande, () => email.EnvoyerAsync(EmailGerant(demande, gerant, devisPdf), ct));
+            : await TenterAsync("e-mail gérant", demande, () => email.EnvoyerAsync(
+                EmailGerant(demande, gerant, devisPdf, parrainage.LienValidation(demande.Id, enregistree.JetonIntervention)), ct));
 
         var numeroGerant = Sms.VersInternational(smsOptions.Value.GerantNumero);
         demande.SmsEnvoye = numeroGerant is null
@@ -65,7 +69,10 @@ public sealed class NotificationsDemande(
         return false;
     }
 
-    private static EmailSortant EmailClient(Demande d, PieceJointe? devisPdf) => new(
+    /// <summary>QR code en PNG servi par l'API (les messageries n'affichent pas le SVG) ; suppose /api servi sur le domaine du site.</summary>
+    private string QrPng(Demande d) => $"{site.Value.Url.TrimEnd('/')}/api/parrainage/{Uri.EscapeDataString(d.CodeParrainPersonnel)}/qr.png";
+
+    private static EmailSortant EmailClient(Demande d, PieceJointe? devisPdf, string lienParrainage, string qrPng) => new(
         d.Email,
         $"{d.Prenom} {d.Nom}",
         $"Votre devis ABS clean {d.Numero}",
@@ -74,11 +81,18 @@ public sealed class NotificationsDemande(
             <p>Merci pour votre demande. {(devisPdf is null ? "Voici le récapitulatif de votre devis" : "Vous trouverez votre devis en pièce jointe")}
             (n° <strong>{H(d.Numero)}</strong>) : <strong>à partir de {DevisPdf.Euros(d.Total)}</strong>.</p>
             <p>{Tarifs.MentionEstimation}. ABS clean vous recontacte rapidement pour fixer l'intervention.</p>
+            <table style="margin:20px 0;border:1px solid #D7E0EA;border-radius:12px;padding:12px"><tr>
+              <td style="padding-right:14px"><img src="{H(qrPng)}" width="110" height="110" alt="QR code de parrainage"></td>
+              <td><div style="font-size:12px;font-weight:bold;color:#2F6FD6;text-transform:uppercase">Votre code parrain</div>
+                <div style="font-size:20px;font-weight:bold">{H(d.CodeParrainPersonnel)}</div>
+                <div style="color:#5B6B80">−10 % sur votre prochaine intervention pour chaque proche qui devient client.
+                Partagez ce lien : <a href="{H(lienParrainage)}">{H(lienParrainage)}</a></div></td>
+            </tr></table>
             <p>À bientôt,<br>ABS clean</p>
             """),
         PieceJointe: devisPdf);
 
-    private static EmailSortant EmailGerant(Demande d, string gerant, PieceJointe? devisPdf)
+    private static EmailSortant EmailGerant(Demande d, string gerant, PieceJointe? devisPdf, string lienValidation)
     {
         var lignes = new (string, string?)[]
         {
@@ -94,6 +108,7 @@ public sealed class NotificationsDemande(
             ("Accès", d.Acces),
             ("Créneaux", d.Creneaux.Count > 0 ? string.Join(", ", d.Creneaux.Select(DevisPdf.Libelle)) : null),
             ("Commentaire", d.Commentaire),
+            ("Code parrain utilisé", d.CodeParrainUtilise),
         };
         var tableau = string.Concat(lignes.Where(l => !string.IsNullOrWhiteSpace(l.Item2)).Select(l =>
             $"<tr><th align=\"left\" style=\"padding:6px 12px 6px 0;color:#5B6B80;font-weight:600;vertical-align:top\">{l.Item1}</th><td style=\"padding:6px 0\">{H(l.Item2!)}</td></tr>"));
@@ -102,7 +117,12 @@ public sealed class NotificationsDemande(
             gerant,
             "ABS clean",
             $"Nouveau devis {d.Numero} — {d.Prenom} {d.Nom}, {d.Ville}",
-            Gabarit($"<p>Nouvelle demande de devis reçue sur le site.</p><table>{tableau}</table>"),
+            Gabarit($"""
+                <p>Nouvelle demande de devis reçue sur le site.</p><table>{tableau}</table>
+                <p style="margin-top:24px">Une fois la première intervention réalisée :<br>
+                <a href="{H(lienValidation)}" style="display:inline-block;margin-top:8px;padding:10px 18px;border-radius:999px;background:#2F6FD6;color:#FFFFFF;text-decoration:none;font-weight:bold">Marquer l'intervention comme réalisée</a></p>
+                <p style="font-size:12px;color:#5B6B80">Lien personnel à usage unique : ne le transférez pas.{(d.CodeParrainUtilise is null ? "" : " La confirmation active la remise de −10 % du parrain et le prévient par e-mail.")}</p>
+                """),
             RepondreA: d.Email,
             PieceJointe: devisPdf);
     }
