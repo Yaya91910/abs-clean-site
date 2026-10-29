@@ -14,7 +14,6 @@ public sealed class DevisPdf(EntrepriseOptions entreprise)
     /// <summary>Séparateur de milliers en espace simple : l'espace fine insécable de .NET n'existe pas dans l'alphabet SMS.</summary>
     private static readonly NumberFormatInfo Montants = new() { NumberGroupSeparator = " ", NumberDecimalSeparator = "," };
     private static readonly string Logo = LireLogo();
-    private static readonly TimeZoneInfo Paris = TimeZoneInfo.FindSystemTimeZoneById("Europe/Paris");
 
     private const string Ink = "#15345F";
     private const string Accent = "#2F6FD6";
@@ -41,7 +40,7 @@ public sealed class DevisPdf(EntrepriseOptions entreprise)
                 {
                     col.Item().Text("Devis").FontSize(22).Bold();
                     col.Item().Text(demande.Numero).FontSize(12).SemiBold().FontColor(Accent);
-                    col.Item().Text($"Date : {TimeZoneInfo.ConvertTimeFromUtc(demande.CreeLe, Paris).ToString("d MMMM yyyy", Fr)}").FontColor(Gris);
+                    col.Item().Text($"Date : {HeureParis.Depuis(demande.CreeLe).ToString("d MMMM yyyy", Fr)}").FontColor(Gris);
                 });
             });
 
