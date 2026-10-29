@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 
 export type Profil = 'particulier' | 'professionnel';
 export type Frequence = 'ponctuel' | 'mensuel' | 'trimestriel';
@@ -33,7 +33,10 @@ export interface GrilleTarifs {
 export class TarifsApi {
   private readonly http = inject(HttpClient);
 
+  /** Chargée une seule fois, partagée entre la section Tarifs et le formulaire de devis. */
+  private readonly grille$ = this.http.get<GrilleTarifs>('/api/tarifs').pipe(shareReplay({ bufferSize: 1, refCount: false }));
+
   grille(): Observable<GrilleTarifs> {
-    return this.http.get<GrilleTarifs>('/api/tarifs');
+    return this.grille$;
   }
 }
