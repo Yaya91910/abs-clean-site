@@ -26,6 +26,10 @@ builder.Services.Configure<EnvoiTestOptions>(builder.Configuration.GetSection("E
 builder.Services.AddSingleton(sp => new DevisPdf(sp.GetRequiredService<IOptions<EntrepriseOptions>>().Value));
 builder.Services.AddScoped<NotificationsDemande>();
 
+// Parrainage (§9 bis) : Site__Url sert de base aux liens de parrainage, aux QR codes et au lien de validation du gérant.
+builder.Services.Configure<SiteOptions>(builder.Configuration.GetSection("Site"));
+builder.Services.AddScoped<ServiceParrainage>();
+
 var emailReel = !string.IsNullOrWhiteSpace(builder.Configuration["Email:ApiKey"]);
 var smsReel = !string.IsNullOrWhiteSpace(builder.Configuration["Sms:ApiKey"]);
 if (emailReel) builder.Services.AddHttpClient<IEnvoiEmail, BrevoEmail>(c => c.Timeout = TimeSpan.FromSeconds(15));
@@ -42,6 +46,9 @@ builder.Services.AddRateLimiter(o =>
     o.AddPolicy(DemandeEndpoints.PolitiqueDebit, http => RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "inconnue",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = limite, Window = fenetre, QueueLimit = 0 }));
+    o.AddPolicy(ParrainageEndpoints.PolitiqueConsultation, http => RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "inconnue",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 
 // CORS limité au domaine du site (Cors__AllowedOrigin).
@@ -65,5 +72,6 @@ app.UseRateLimiter();
 app.MapGet("/api/health", () => TypedResults.Ok(new { status = "ok" }));
 app.MapDevisEndpoints();
 app.MapDemandeEndpoints();
+app.MapParrainageEndpoints();
 
 app.Run();

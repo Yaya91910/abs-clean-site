@@ -20,7 +20,8 @@ public sealed class DevisPdf(EntrepriseOptions entreprise)
     private const string Accent = "#2F6FD6";
     private const string Gris = "#5B6B80";
 
-    public byte[] Generer(Demande demande)
+    /// <param name="qrParrainage">QR code SVG du lien de parrainage du client, imprimé avec son code personnel.</param>
+    public byte[] Generer(Demande demande, string? qrParrainage = null)
     {
         // Le détail est recalculé depuis les quantités enregistrées : même source de vérité que le total.
         var devis = CalculDevis.Calculer(
@@ -110,6 +111,21 @@ public sealed class DevisPdf(EntrepriseOptions entreprise)
                         c.Item().Text($"Formule {Libelle(demande.Frequence)} : la réduction applicable vous sera confirmée lors de l'échange.").FontColor(Gris);
                     c.Item().Text(Tarifs.MentionOption).FontColor(Gris);
                 });
+
+                if (qrParrainage is not null && demande.CodeParrainPersonnel.Length > 0)
+                {
+                    col.Item().Border(1).BorderColor("#D7E0EA").Padding(12).Row(row =>
+                    {
+                        row.ConstantItem(90).Height(90).Svg(qrParrainage);
+                        row.ConstantItem(14);
+                        row.RelativeItem().AlignMiddle().Column(c =>
+                        {
+                            c.Item().Text("Votre code parrain").SemiBold().FontColor(Accent);
+                            c.Item().Text(demande.CodeParrainPersonnel).FontSize(16).Bold();
+                            c.Item().Text("−10 % sur votre prochaine intervention pour chaque proche qui devient client.").FontColor(Gris);
+                        });
+                    });
+                }
             });
 
             page.Footer().AlignCenter().Column(col =>

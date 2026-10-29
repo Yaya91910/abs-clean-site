@@ -2,6 +2,7 @@ import { DOCUMENT, Injectable, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { Frequence, GrilleTarifs, Profil, TarifsApi } from './tarifs-api';
+import { ParrainageApi } from './parrainage-api';
 
 export type CodeQuantite = 'vitre' | 'baie' | 'velux';
 
@@ -31,6 +32,9 @@ export class DevisStore {
   readonly quantites = signal<Record<CodeQuantite, number>>({ vitre: 0, baie: 0, velux: 0 });
   readonly localisation = signal('');
   readonly codeParrain = signal('');
+  /** Résultat de la vérification du code saisi : reconnu, inconnu, ou null (vide / non vérifié). */
+  readonly codeReconnu = signal<boolean | null>(null);
+  private readonly parrainageApi = inject(ParrainageApi);
 
   /** Total estimé, ou null tant que la grille n'est pas chargée. */
   readonly total = computed(() => {
@@ -66,7 +70,14 @@ export class DevisStore {
   }
 
   definirCodeParrain(code: string): void {
-    this.codeParrain.set(code.trim().toUpperCase());
+    const normalise = code.replace(/\s/g, '').toUpperCase();
+    this.codeParrain.set(normalise);
+    this.codeReconnu.set(null);
+    if (!normalise) return;
+    this.parrainageApi.existe(normalise).subscribe((existe) => {
+      // Ignore une réponse arrivée après une nouvelle saisie.
+      if (this.codeParrain() === normalise) this.codeReconnu.set(existe);
+    });
   }
 }
 
