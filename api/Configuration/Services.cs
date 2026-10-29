@@ -68,15 +68,21 @@ public static class Services
         return builder;
     }
 
-    /// <summary>Limitation de débit par IP (§8) : envoi des demandes, et consultations du parrainage.</summary>
+    /// <summary>
+    /// Limitation de débit par IP (§8) : envoi des demandes, consultations du parrainage,
+    /// et une limite générale large sur tout le reste contre les inondations de requêtes.
+    /// </summary>
     public static WebApplicationBuilder AjouterAntiAbus(this WebApplicationBuilder builder)
     {
-        var limiteDemandes = builder.Configuration.GetValue("RateLimit:Demandes:Limite", 5);
-        var fenetreDemandes = TimeSpan.FromMinutes(builder.Configuration.GetValue("RateLimit:Demandes:FenetreMinutes", 10));
+        var config = builder.Configuration;
+        var limiteDemandes = config.GetValue("RateLimit:Demandes:Limite", 5);
+        var fenetreDemandes = TimeSpan.FromMinutes(config.GetValue("RateLimit:Demandes:FenetreMinutes", 10));
+        var limiteGenerale = config.GetValue("RateLimit:Global:LimiteParMinute", 300);
 
         builder.Services.AddRateLimiter(o =>
         {
             o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            o.GlobalLimiter = PartitionedRateLimiter.Create(ParIp(limiteGenerale, TimeSpan.FromMinutes(1)));
             o.AddPolicy(DemandeEndpoints.PolitiqueDebit, ParIp(limiteDemandes, fenetreDemandes));
             o.AddPolicy(ParrainageEndpoints.PolitiqueConsultation, ParIp(60, TimeSpan.FromMinutes(1)));
         });

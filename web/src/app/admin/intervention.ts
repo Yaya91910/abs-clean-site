@@ -3,8 +3,9 @@ import { ParrainageApi, ResultatValidation } from '../core/parrainage-api';
 import { Logo } from '../shared/logo';
 
 /**
- * Page ouverte depuis le lien de l'e-mail du gérant : /admin/intervention?demande=ID&jeton=…
- * La validation exige un clic (POST) : un simple aperçu du lien par la messagerie ne déclenche rien.
+ * Page ouverte depuis le lien de l'e-mail du gérant : /admin/intervention#demande=ID&jeton=…
+ * Le jeton est après « # » : il n'est jamais envoyé au serveur avec l'adresse, seulement dans le POST de confirmation.
+ * La validation exige un clic : un simple aperçu du lien par la messagerie ne déclenche rien.
  */
 @Component({
   selector: 'abs-admin-intervention',
@@ -54,7 +55,7 @@ import { Logo } from '../shared/logo';
 })
 export class AdminIntervention {
   private readonly api = inject(ParrainageApi);
-  private readonly parametres = new URLSearchParams(inject(DOCUMENT).location.search);
+  private readonly parametres = lireParametres(inject(DOCUMENT).location);
   private readonly demande = this.parametres.get('demande') ?? '';
   private readonly jeton = this.parametres.get('jeton') ?? '';
 
@@ -64,4 +65,10 @@ export class AdminIntervention {
     this.etat.set('envoi');
     this.api.validerIntervention(this.demande, this.jeton).subscribe((resultat) => this.etat.set(resultat));
   }
+}
+
+/** Paramètres du lien : après « # » (format actuel) ou, pour les liens plus anciens, après « ? ». */
+function lireParametres(adresse: Location): URLSearchParams {
+  const fragment = new URLSearchParams(adresse.hash.replace(/^#/, ''));
+  return fragment.has('jeton') ? fragment : new URLSearchParams(adresse.search);
 }

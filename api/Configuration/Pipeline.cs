@@ -69,7 +69,8 @@ public static class Pipeline
         app.MapParrainageEndpoints();
 
         var page = app.Services.GetRequiredService<PageIndex>();
-        app.MapGet("/", page.Servir);
+        // GET et HEAD : certains services de surveillance testent la disponibilité par une requête HEAD.
+        app.MapMethods("/", [HttpMethods.Get, HttpMethods.Head], page.Servir);
         app.MapFallback("{*chemin:regex(^(?!api(/|$)).*$):nonfile}", page.Servir);
         return app;
     }
