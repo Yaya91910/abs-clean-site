@@ -61,6 +61,13 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 
 var app = builder.Build();
 
+// Applique les migrations au démarrage si demandé (préproduction, tests de bout en bout).
+if (app.Configuration.GetValue<bool>("Database:MigrerAuDemarrage"))
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<AbsCleanDb>().Database.Migrate();
+}
+
 if (!emailReel || !smsReel)
     app.Logger.LogWarning("Mode test des envois (e-mail réel : {Email}, SMS réel : {Sms}) : messages écrits dans un dossier local, rien n'est envoyé.", emailReel, smsReel);
 
