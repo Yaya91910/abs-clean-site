@@ -100,6 +100,7 @@ type Champ = keyof typeof MESSAGES;
               @if (erreur('consentement'); as message) {
                 <span class="field-error" id="e-consentement">{{ message }}</span>
               }
+              <a class="lien-confidentialite" href="/confidentialite" target="_blank" rel="noopener">Politique de confidentialité (nouvel onglet)</a>
             </div>
           </div>
 
@@ -170,6 +171,7 @@ type Champ = keyof typeof MESSAGES;
     .pill-btn.petit { min-height: 38px; padding: 0 16px; font-size: 13px; }
     .consent-bloc { display: flex; flex-direction: column; gap: 6px; text-align: left; }
     .consent { display: flex; align-items: flex-start; gap: 10px; width: 100%; font-size: 13px; color: var(--text-muted); line-height: 1.5; cursor: pointer; }
+    .lien-confidentialite { font-size: 12px; padding-left: 28px; }
     .consent input { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--accent); flex-shrink: 0; }
 
     .modal-actions { display: flex; flex-wrap: wrap-reverse; justify-content: center; gap: 12px; width: 100%; flex-shrink: 0; }

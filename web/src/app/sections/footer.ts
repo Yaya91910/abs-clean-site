@@ -10,16 +10,20 @@ import { Logo } from '../shared/logo';
       <abs-logo [hauteur]="72" />
       <p class="zone">Essonne — nettoyage et entretien des surfaces vitrées, jusqu'à 2,50 m de hauteur.</p>
       <nav aria-label="Liens du pied de page" class="liens">
-        <a href="#qui-sommes-nous">À propos</a>
-        <a href="#prestations">Prestations</a>
-        <a href="#tarifs">Tarifs</a>
-        <a href="#faq">FAQ</a>
-        <a href="#parrainage">Parrainage</a>
-        <a href="#devis">Devis</a>
+        <a href="/#qui-sommes-nous">À propos</a>
+        <a href="/#prestations">Prestations</a>
+        <a href="/#tarifs">Tarifs</a>
+        <a href="/#faq">FAQ</a>
+        <a href="/#parrainage">Parrainage</a>
+        <a href="/#devis">Devis</a>
       </nav>
       <!-- Téléphone et e-mail : À FOURNIR par le gérant (CLAUDE.md §18). -->
       <p class="contact">[Téléphone] · [Adresse e-mail]</p>
-      <!-- Mentions légales et politique de confidentialité : pages à créer (contenus À FOURNIR). -->
+      <nav aria-label="Informations légales" class="liens legal">
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="/confidentialite">Confidentialité</a>
+        <a href="/parrainage/conditions">Conditions du parrainage</a>
+      </nav>
       <p class="copy">© {{ annee }} ABS clean. Tous droits réservés.</p>
     </footer>
   `,
