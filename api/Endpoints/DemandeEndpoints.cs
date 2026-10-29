@@ -1,5 +1,6 @@
 using AbsClean.Api.Domain;
 using AbsClean.Api.Infrastructure;
+using AbsClean.Api.Infrastructure.Envoi;
 
 namespace AbsClean.Api.Endpoints;
 
@@ -9,7 +10,7 @@ public static class DemandeEndpoints
 
     public static IEndpointRouteBuilder MapDemandeEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/demandes", async (NouvelleDemande demande, DemandeStore store, ILogger<NouvelleDemande> log, CancellationToken ct) =>
+        app.MapPost("/api/demandes", async (NouvelleDemande demande, DemandeStore store, NotificationsDemande notifications, ILogger<NouvelleDemande> log, CancellationToken ct) =>
         {
             // Honeypot rempli : un robot. Réponse volontairement générique.
             if (demande.HoneypotRempli)
@@ -26,8 +27,11 @@ public static class DemandeEndpoints
             var devis = CalculDevis.Calculer(demande.Quantites, demande.Profil, demande.Frequence);
             var enregistree = await store.EnregistrerAsync(demande, devis, ct);
 
-            // PDF, e-mails et SMS : étape suivante (§9, points 4 à 8).
             log.LogInformation("Demande {Numero} enregistrée ({Total} €).", enregistree.Numero, enregistree.Total);
+
+            // La demande est enregistrée : les envois ne doivent plus pouvoir faire échouer la réponse,
+            // ni être interrompus si le navigateur se déconnecte entre-temps.
+            await notifications.EnvoyerAsync(enregistree, CancellationToken.None);
 
             return Results.Created((string?)null, new
             {
