@@ -150,7 +150,8 @@ public class SiteFactory : ApiFactory
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        if (disposing) Directory.Delete(Racine, recursive: true);
+        // La fabrique peut être libérée deux fois (Dispose puis DisposeAsync) : on ne supprime qu'une fois.
+        if (disposing && Directory.Exists(Racine)) Directory.Delete(Racine, recursive: true);
     }
 }
 
