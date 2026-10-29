@@ -30,6 +30,7 @@
               }
             ],
             "styles": [
+              "@fontsource-variable/inter/index.css",
               "src/styles.scss"
             ]
           },

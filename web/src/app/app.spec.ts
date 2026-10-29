@@ -26,8 +26,10 @@ describe('App', () => {
 
     const ids = Array.from(page.querySelectorAll('section[id]')).map((s) => s.id);
     expect(ids).toEqual(['qui-sommes-nous', 'prestations', 'tarifs', 'faq', 'devis', 'parrainage']);
-    for (const lien of Array.from(page.querySelectorAll<HTMLAnchorElement>('nav a'))) {
-      expect(ids).toContain(lien.getAttribute('href')!.slice(1));
+    const ancres = Array.from(page.querySelectorAll<HTMLAnchorElement>('nav a[href^="/#"]'));
+    expect(ancres.length).toBeGreaterThan(0);
+    for (const lien of ancres) {
+      expect(ids).toContain(lien.getAttribute('href')!.slice(2));
     }
   });
 });

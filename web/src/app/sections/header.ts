@@ -8,16 +8,16 @@ import { Logo } from '../shared/logo';
   imports: [Logo, Fleche],
   template: `
     <header class="header">
-      <a href="#" class="brand" aria-label="ABS clean, retour en haut de page"><abs-logo [hauteur]="56" /></a>
+      <a href="/" class="brand" aria-label="ABS clean, retour en haut de page"><abs-logo [hauteur]="56" /></a>
       <div class="right">
         <nav aria-label="Navigation principale" class="nav-links">
-          <a href="#qui-sommes-nous">À propos</a>
-          <a href="#prestations">Prestations</a>
-          <a href="#tarifs">Tarifs</a>
-          <a href="#faq">FAQ</a>
-          <a href="#parrainage">Parrainage</a>
+          <a href="/#qui-sommes-nous">À propos</a>
+          <a href="/#prestations">Prestations</a>
+          <a href="/#tarifs">Tarifs</a>
+          <a href="/#faq">FAQ</a>
+          <a href="/#parrainage">Parrainage</a>
         </nav>
-        <a href="#devis" class="head-cta">
+        <a href="/#devis" class="head-cta">
           <span class="tag">2 min</span>Devis gratuit<span class="arrow"><abs-fleche [taille]="18" /></span>
         </a>
       </div>
