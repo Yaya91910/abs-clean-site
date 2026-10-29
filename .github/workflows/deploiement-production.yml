@@ -1,0 +1,22 @@
+name: Déploiement production
+
+# Production sur validation manuelle (CLAUDE.md §16) : lancement à la main depuis l'onglet Actions,
+# puis approbation dans l'environnement GitHub « production » (relecteurs obligatoires à configurer).
+on:
+  workflow_dispatch:
+
+jobs:
+  deployer:
+    name: Déployer main en production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Déclencher le déploiement Render
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "Secret RENDER_DEPLOY_HOOK_PRODUCTION absent : service de production pas encore créé." >&2
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK"

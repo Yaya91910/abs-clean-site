@@ -1,0 +1,55 @@
+# Préproduction ABS clean sur Render (Blueprint) : région Francfort, offre gratuite.
+# Offre gratuite : mise en veille après 15 min sans visite (~1 min pour se réveiller),
+# base PostgreSQL supprimée environ 44 jours après sa création. Ne pas l'utiliser pour la production.
+services:
+  - type: web
+    name: abs-clean-preprod
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: frankfurt
+    plan: free
+    branch: main
+    # Déploiement automatique de main, seulement quand la CI GitHub est verte.
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/health
+    envVars:
+      - key: ConnectionStrings__Default
+        fromDatabase:
+          name: abs-clean-db-preprod
+          property: connectionString
+      - key: Database__MigrerAuDemarrage
+        value: "true"
+      - key: Proxy__EntetesTransferees
+        value: "true"
+      - key: PORT
+        value: "8080"
+      # Adresse publique du service (ex. https://abs-clean-preprod.onrender.com) : liens de parrainage et QR codes.
+      - key: Site__Url
+        sync: false
+      # Brevo et coordonnées : À FOURNIR. Laissées vides, les envois restent en mode test (rien ne part).
+      - key: Email__ApiKey
+        sync: false
+      - key: Email__From
+        sync: false
+      - key: Email__GerantTo
+        sync: false
+      - key: Sms__ApiKey
+        sync: false
+      - key: Sms__Sender
+        sync: false
+      - key: Sms__GerantNumero
+        sync: false
+      - key: Entreprise__Siret
+        sync: false
+      - key: Entreprise__Adresse
+        sync: false
+      - key: Entreprise__Telephone
+        sync: false
+      - key: Entreprise__Email
+        sync: false
+
+databases:
+  - name: abs-clean-db-preprod
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "17"

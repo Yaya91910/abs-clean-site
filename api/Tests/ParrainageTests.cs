@@ -93,6 +93,19 @@ public class ParrainageTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public void Qr_code_decodable_pour_de_nombreux_codes()
+    {
+        using var scope = factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<ServiceParrainage>();
+        foreach (var prenom in new[] { "Léa", "Marie", "Jean-François", "Zoé", "Maximilien" })
+            for (var i = 0; i < 60; i++)
+            {
+                var code = CodeParrain.Generer(prenom, 1 + i % 2);
+                Assert.Equal($"https://abs-clean.test/devis?parrain={code}", Decoder(service, code));
+            }
+    }
+
+    [Fact]
     public async Task Code_inconnu_ignore_sans_bloquer_la_demande()
     {
         var reponse = await EnvoyerAsync(Client("Hugo", codeParrainage: "ABS-INCONNUZZ"));
@@ -194,6 +207,8 @@ public class ParrainageTests(ApiFactory factory) : IClassFixture<ApiFactory>
                 pixels[y * n * echelle + x] = donnees.ModuleMatrix[y / echelle][x / echelle] ? (byte)0 : (byte)255;
 
         var source = new RGBLuminanceSource(pixels, n * echelle, n * echelle, RGBLuminanceSource.BitmapFormat.Gray8);
-        return new QRCodeReader().decode(new BinaryBitmap(new HybridBinarizer(source))).Text;
+        // Image synthétique parfaite : lecture en « code-barres pur », la détection générique échoue sur certains motifs.
+        var indices = new Dictionary<DecodeHintType, object> { [DecodeHintType.PURE_BARCODE] = true };
+        return new QRCodeReader().decode(new BinaryBitmap(new HybridBinarizer(source)), indices).Text;
     }
 }
