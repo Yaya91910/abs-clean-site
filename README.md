@@ -122,6 +122,10 @@ Ne jamais commiter de secret.
 GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) compile et teste l'API et le front à chaque push sur `main` et sur chaque pull request.
 Un job construit aussi l'image Docker de production.
 
+## Sécurité
+
+Mesures en place, liste de vérification des comptes (2FA, sauvegardes) et limites connues : [docs/SECURITE.md](docs/SECURITE.md).
+
 ## Déploiement
 
 Image Docker unique (API + site) hébergée sur Render, région Francfort : préproduction déployée automatiquement
