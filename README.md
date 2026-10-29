@@ -126,6 +126,11 @@ Un job construit aussi l'image Docker de production.
 
 Mesures en place, liste de vérification des comptes (2FA, sauvegardes) et limites connues : [docs/SECURITE.md](docs/SECURITE.md).
 
+## Bilan hebdomadaire
+
+Consignes d'un bilan de santé en lecture seule (site en ligne, CI, PR Dependabot, vulnérabilités) :
+[docs/BILAN-HEBDO.md](docs/BILAN-HEBDO.md). À lancer à la demande ou depuis une tâche programmée.
+
 ## Déploiement
 
 Image Docker unique (API + site) hébergée sur Render, région Francfort : préproduction déployée automatiquement

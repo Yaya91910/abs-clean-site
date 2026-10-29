@@ -322,6 +322,13 @@ Le site est terminé quand : tous les tests passent en CI ; un devis réel a ét
 
 > Section à tenir à jour à chaque étape importante : c'est le point de départ d'une nouvelle conversation.
 
+Adresse en ligne : aucune (site pas encore en ligne)
+
+> Dès la mise en ligne, remplacer la ligne ci-dessus par une ligne par environnement, au format
+> `Adresse en ligne : <adresse https> (préproduction)` puis `… (production)`.
+
+Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le bilan décrit dans docs/BILAN-HEBDO.md »). Il lit la ligne ci-dessus pour vérifier le site en ligne.
+
 ### Fait (fusionné dans `main`, CI verte)
 
 | PR | Contenu |
