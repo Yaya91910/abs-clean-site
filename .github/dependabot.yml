@@ -11,6 +11,10 @@ updates:
   - package-ecosystem: npm
     directory: /web
     schedule: { interval: weekly, day: monday }
+    ignore:
+      # TypeScript suit la version exigée par Angular : mise à jour avec « ng update », pas seule.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     groups:
       angular: { patterns: ["@angular/*", "@angular-devkit/*"] }
       autres: { patterns: ["*"], exclude-patterns: ["@angular/*", "@angular-devkit/*"], update-types: [minor, patch] }
@@ -18,12 +22,20 @@ updates:
   - package-ecosystem: npm
     directory: /e2e
     schedule: { interval: weekly, day: monday }
+    ignore:
+      # Types de Node alignés sur la version de Node utilisée (22 LTS).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       e2e: { patterns: ["*"] }
 
   - package-ecosystem: docker
     directory: /
     schedule: { interval: weekly, day: monday }
+    ignore:
+      # Node : uniquement des versions LTS, changées à la main (avec la CI et Angular), jamais une version impaire.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
