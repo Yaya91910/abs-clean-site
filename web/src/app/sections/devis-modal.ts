@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DOCUMENT, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Creneau, DemandesApi, ResultatEnvoi } from '../core/demandes-api';
+import { Creneau, DemandeAcceptee, DemandesApi, ResultatEnvoi } from '../core/demandes-api';
+import { ParrainageApi } from '../core/parrainage-api';
 import { DevisStore } from '../core/devis-store';
 import { Fleche } from '../shared/fleche';
 
@@ -119,7 +120,19 @@ type Champ = keyof typeof MESSAGES;
           </div>
           <h3 id="modal-title">Demande envoyée !</h3>
           <p>Votre devis en PDF vient de partir dans votre boîte mail. ABS clean vous recontacte rapidement pour fixer l'intervention.</p>
-          <!-- Code parrain personnel et QR code : ajoutés avec le programme de parrainage (§9 bis). -->
+          @if (acceptee(); as a) {
+            <div class="ref-success">
+              <div class="qr-box small"><img [src]="parrainageApi.qrSvg(a.codeParrain)" alt="QR code de votre lien de parrainage" width="80" height="80" /></div>
+              <div class="ref-success-txt">
+                <span class="ref-label">Votre code parrain</span>
+                <span class="ref-code">{{ a.codeParrain }}</span>
+                <span class="ref-offre">−10&nbsp;% sur votre prochaine intervention pour chaque proche qui devient client.</span>
+              </div>
+            </div>
+            @if (a.codeParrainageSaisi === 'ignore') {
+              <p class="note-code">Le code de parrainage saisi n'a pas pu être pris en compte.</p>
+            }
+          }
           <button type="button" class="btn-cancel" (click)="fermer()">Fermer</button>
         </div>
       }
@@ -167,6 +180,13 @@ type Champ = keyof typeof MESSAGES;
     .succes-ico { width: 72px; height: 72px; border-radius: 999px; background: linear-gradient(135deg, #3FD08F, var(--success)); display: flex; align-items: center; justify-content: center; box-shadow: 0 14px 30px -12px rgba(34, 181, 115, 0.7); }
     .succes h3 { font-size: 24px; }
     .succes p { font-size: 15px; color: var(--text-muted); margin: 0; max-width: 360px; line-height: 1.6; }
+    .ref-success { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: rgba(47, 111, 214, 0.06); border: 1px solid rgba(47, 111, 214, 0.15); text-align: left; }
+    .qr-box.small { width: 92px; height: 92px; padding: 6px; border-radius: 14px; flex-shrink: 0; box-shadow: 0 8px 18px -10px rgba(21, 52, 95, 0.4); border: 1px solid #E3E8F0; }
+    .ref-success-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .ref-label { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; }
+    .ref-code { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: 0.04em; overflow-wrap: anywhere; }
+    .ref-offre { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+    .succes .note-code { font-size: 13px; }
 
     @media (max-width: 520px) {
       .modal-card { padding: 20px 16px; border-radius: 22px; width: calc(100% - 24px); }
@@ -181,12 +201,14 @@ type Champ = keyof typeof MESSAGES;
 })
 export class DevisModal {
   protected readonly store = inject(DevisStore);
+  protected readonly parrainageApi = inject(ParrainageApi);
   private readonly api = inject(DemandesApi);
   private readonly document = inject(DOCUMENT);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
   protected readonly etat = signal<'saisie' | 'envoi' | 'envoyee'>('saisie');
   protected readonly erreurGlobale = signal<string | null>(null);
+  protected readonly acceptee = signal<DemandeAcceptee | null>(null);
   private readonly tentative = signal(false);
   /** Incrémenté à chaque changement d'erreurs pour rafraîchir la vue (OnPush). */
   private readonly version = signal(0);
@@ -298,6 +320,7 @@ export class DevisModal {
   private traiter(resultat: ResultatEnvoi): void {
     switch (resultat.statut) {
       case 'ok':
+        this.acceptee.set(resultat);
         this.etat.set('envoyee');
         this.focaliser('modal-title');
         return;
