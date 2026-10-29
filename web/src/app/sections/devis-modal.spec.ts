@@ -74,6 +74,7 @@ describe('Devis et fenêtre de coordonnées', () => {
     const code = page.querySelector<HTMLInputElement>('#code-parrain')!;
     code.value = 'abs-marie7';
     code.dispatchEvent(new Event('change'));
+    http.expectOne('/api/parrainage/ABS-MARIE7').flush({ code: 'ABS-MARIE7', valide: true });
     page.querySelector<HTMLButtonElement>('.valider')!.click();
     await stable();
 
@@ -97,7 +98,10 @@ describe('Devis et fenêtre de coordonnées', () => {
     });
     expect(requete.request.body).not.toHaveProperty('total');
 
-    requete.flush({ numero: 'ABS-2026-0001', total: 45 }, { status: 201, statusText: 'Created' });
+    requete.flush(
+      { numero: 'ABS-2026-0001', total: 45, codeParrain: 'ABS-LEA7', lienParrainage: 'https://abs-clean.test/devis?parrain=ABS-LEA7', codeParrainageSaisi: 'applique' },
+      { status: 201, statusText: 'Created' },
+    );
     await stable();
     expect(page.querySelector('.succes')?.textContent).toContain('Demande envoyée !');
   });

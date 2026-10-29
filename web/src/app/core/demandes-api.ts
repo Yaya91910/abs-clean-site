@@ -27,8 +27,18 @@ export interface NouvelleDemande {
   siteWeb: string;
 }
 
+export interface DemandeAcceptee {
+  numero: string;
+  total: number;
+  /** Code de parrainage personnel du client, à partager. */
+  codeParrain: string;
+  lienParrainage: string;
+  /** Sort du code saisi par le client : appliqué, ignoré (inconnu, auto-parrainage…) ou aucun. */
+  codeParrainageSaisi: 'applique' | 'ignore' | null;
+}
+
 export type ResultatEnvoi =
-  | { statut: 'ok'; numero: string; total: number }
+  | ({ statut: 'ok' } & DemandeAcceptee)
   | { statut: 'invalide'; erreurs: Record<string, string[]> }
   | { statut: 'trop-de-demandes' }
   | { statut: 'erreur' };
@@ -39,8 +49,8 @@ export class DemandesApi {
   private readonly http = inject(HttpClient);
 
   envoyer(demande: NouvelleDemande): Observable<ResultatEnvoi> {
-    return this.http.post<{ numero: string; total: number }>('/api/demandes', demande).pipe(
-      map((r): ResultatEnvoi => ({ statut: 'ok', numero: r.numero, total: r.total })),
+    return this.http.post<DemandeAcceptee>('/api/demandes', demande).pipe(
+      map((r): ResultatEnvoi => ({ statut: 'ok', ...r })),
       catchError((e: HttpErrorResponse) => of(versResultat(e))),
     );
   }

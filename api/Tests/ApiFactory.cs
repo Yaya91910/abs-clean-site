@@ -29,6 +29,7 @@ public class ApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("RateLimit:Demandes:Limite", LimiteDemandes.ToString());
         builder.UseSetting("Email:GerantTo", "gerant@example.com");
         builder.UseSetting("Sms:GerantNumero", "06 11 22 33 44");
+        builder.UseSetting("Site:Url", "https://abs-clean.test");
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DbContextOptions<AbsCleanDb>>();

@@ -39,6 +39,15 @@ namespace AbsClean.Api.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("CodeParrainPersonnel")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("CodeParrainUtilise")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<string>("CodePostal")
                         .IsRequired()
                         .HasMaxLength(5)
@@ -75,6 +84,13 @@ namespace AbsClean.Api.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTime?>("InterventionRealiseeLe")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("JetonInterventionHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<int>("NbBaies")
                         .HasColumnType("integer");
 
@@ -96,6 +112,9 @@ namespace AbsClean.Api.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<int?>("ParrainId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Prenom")
                         .IsRequired()
@@ -131,10 +150,84 @@ namespace AbsClean.Api.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CodeParrainPersonnel")
+                        .IsUnique();
+
+                    b.HasIndex("Email");
+
                     b.HasIndex("Numero")
                         .IsUnique();
 
+                    b.HasIndex("ParrainId");
+
+                    b.HasIndex("Telephone");
+
                     b.ToTable("Demandes");
+                });
+
+            modelBuilder.Entity("AbsClean.Api.Domain.Parrainage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreeLe")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FilleulId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParrainId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RemiseUtiliseeLe")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Statut")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("ValideLe")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilleulId")
+                        .IsUnique();
+
+                    b.HasIndex("ParrainId");
+
+                    b.ToTable("Parrainages");
+                });
+
+            modelBuilder.Entity("AbsClean.Api.Domain.Demande", b =>
+                {
+                    b.HasOne("AbsClean.Api.Domain.Demande", null)
+                        .WithMany()
+                        .HasForeignKey("ParrainId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("AbsClean.Api.Domain.Parrainage", b =>
+                {
+                    b.HasOne("AbsClean.Api.Domain.Demande", "Filleul")
+                        .WithMany()
+                        .HasForeignKey("FilleulId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AbsClean.Api.Domain.Demande", "Parrain")
+                        .WithMany()
+                        .HasForeignKey("ParrainId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Filleul");
+
+                    b.Navigation("Parrain");
                 });
 #pragma warning restore 612, 618
         }
