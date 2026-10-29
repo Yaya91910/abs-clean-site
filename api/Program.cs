@@ -3,6 +3,7 @@ using AbsClean.Api.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 builder
+    .AjouterSecurite()
     .AjouterApi()
     .AjouterDonnees()
     .AjouterEnvois()
@@ -13,6 +14,7 @@ var app = builder.Build();
 
 app.MigrerSiDemande()
     .SignalerModeEnvois()
+    .UtiliserEntetesSecurite()
     .UtiliserChaine()
     .MapperRoutes();
 
