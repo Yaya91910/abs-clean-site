@@ -315,3 +315,69 @@ Cors__AllowedOrigin=
 ## 19. Définition de « terminé »
 
 Le site est terminé quand : tous les tests passent en CI ; un devis réel a été reçu (PDF client, e-mail et SMS gérant) en préproduction puis en production ; le rendu est validé sur iPhone, Android et ordinateur ; Lighthouse mobile ≥ 90 ; les pages légales sont en ligne ; et le gérant a validé le site.
+
+---
+
+## 20. État d'avancement (au 29 octobre 2026)
+
+> Section à tenir à jour à chaque étape importante : c'est le point de départ de chaque nouvelle session de travail.
+
+### Fait (fusionné dans `main`, CI verte)
+
+| PR | Contenu |
+|---|---|
+| #1 | Squelettes API (.NET 10) et web (Angular 22), calcul du devis, CI |
+| #2 | `POST /api/demandes` : PostgreSQL (EF Core), numéro `ABS-AAAA-NNNN`, validation §8, honeypot, limite par IP |
+| #3 | Sections fidèles à la maquette, estimation en direct, fenêtre de coordonnées (`<dialog>`) |
+| #4 | Devis PDF (QuestPDF), e-mails client et gérant, SMS gérant (Brevo ou mode test) |
+| #5 | Parrainage : codes, QR (QRCoder), anti-fraude, lien de validation du gérant, page `/admin/intervention` |
+| #6 | Tests Playwright (parcours complet à 1440 / 820 / 390 / 340 px) et job CI |
+| #7 | Image Docker unique (l'API sert le site), `render.yaml` (Render, Francfort), déploiement production manuel |
+| #8 | Pages légales (`/mentions-legales`, `/confidentialite`, `/parrainage/conditions`), police Inter hébergée |
+| #9 | Accessibilité AA (contrastes, contrôle axe) — Lighthouse mobile 98–100 |
+| #10 | Envois en arrière-plan + reprise au démarrage, alerte mode test, 4 bugs corrigés, refactoring |
+| #11 | Sécurité : CSP et en-têtes, limite 64 Ko, caractères de contrôle, jeton du gérant après `#`, Dependabot |
+| #15, #18, #19, #20 | Mises à jour Dependabot triées, règles d'exclusion, coverlet retiré |
+
+Tests : API 122 (xUnit), site 20 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+
+### Reste à faire
+
+1. **Informations du gérant** (§18) : liste à remplir envoyée sous forme de PDF (`docs/ABS-clean-informations.pdf`, **non versionné** : la version remplie contient ses coordonnées, ne jamais la committer). À intégrer à réception : prix et réductions (`api/Domain/Tarifs.cs` + réponse FAQ « Comment est calculé le prix ? » + tests), coordonnées (`Entreprise__*`, pied de page, mentions légales), réseaux (`web/src/app/sections/reseaux.ts`), règles du parrainage (page conditions), durée de conservation (confidentialité ; purge automatique à ajouter), photos (héros, avant/après, en WebP/AVIF).
+2. **Préproduction** : compte Render + Blueprint (`docs/DEPLOIEMENT.md`). Puis vérifier en ligne : vraie IP derrière Render (`X-Forwarded-For`, sinon la limite par IP s'applique à tous), vrais e-mails et SMS (Brevo), aperçu de partage, iPhone (Safari) et Android.
+3. **Production** : offres payantes (base avec sauvegardes) et nom de domaine, avec l'accord du gérant ; secret `RENDER_DEPLOY_HOOK_PRODUCTION`, environnement GitHub `production` avec relecteur.
+4. **Comptes** : liste de `docs/SECURITE.md` (2FA partout, branche `main` protégée).
+5. Pistes non demandées : écran d'administration (liste des demandes, remise utilisée `RemiseUtiliseeLe`), purge des anciennes demandes, tiret « — » du SMS (2 SMS facturés en Unicode, « - » tiendrait en 1).
+
+### Choix importants (ne pas défaire sans raison)
+
+- **Le calcul fait foi côté serveur** ; le front n'envoie que des quantités.
+- **Une seule image Docker** : l'API sert le site (même domaine, pas de CORS). `PageIndex` remplace `__SITE_URL__` par `Site__Url` et pose la CSP, avec l'empreinte SHA-256 du script intégré par Angular calculée au démarrage.
+- **Envois en arrière-plan** (`FileEnvois` + `EnvoisEnArrierePlan`), indépendants les uns des autres ; `Envois__EnArrierePlan=false` dans les tests.
+- **Mode test des envois** sans clé Brevo : tout est écrit dans `api/boite-envoi/` (ignoré par Git).
+- **Lien du gérant** : jeton de 256 bits après `#`, empreinte seule en base, validation atomique (`ExecuteUpdate`).
+- **Front sans routeur** : `app.ts` choisit la page selon l'adresse ; passer au routeur Angular si les pages se multiplient.
+- **Node 22 LTS** partout (CI, image, tests) ; TypeScript suit Angular (`ng update`) : Dependabot ignore leurs versions majeures.
+- **Deux gris et le vert du badge assombris** par rapport à la maquette, pour le contraste AA (§14).
+
+### Lancer et tester (sur ce Mac)
+
+Outils installés en espace utilisateur : .NET 10 dans `~/.dotnet`, Node 22 via nvm (Node 16 reste le défaut du shell), GitHub CLI dans `~/.local/bin/gh`, PostgreSQL 14 local (base `abs_clean_dev`). Docker n'est pas installé : l'image est construite par la CI.
+
+```bash
+~/.dotnet/dotnet run --project api --launch-profile http
+```
+
+```bash
+cd web && PATH="$HOME/.nvm/versions/node/v22.23.4/bin:$PATH" npx ng serve
+```
+
+Site sur http://localhost:4200 (API sur 5188 via le proxy). Tests : `dotnet test` (vérifier le **code de sortie**, pas seulement la ligne « Réussi »), `npx ng test --watch=false` dans `web/`, `npx playwright test` dans `e2e/` (pile isolée : API 5288, base `abs_clean_e2e`, site 4300).
+
+### Pièges connus
+
+- `ng serve` peut rester bloqué sur une ancienne version après un changement de branche : le relancer.
+- Les tests d'intégration utilisent un fichier SQLite temporaire par fabrique (une connexion par opération) : une connexion SQLite partagée fait échouer au hasard les tests où l'arrière-plan et le test lisent la base en même temps.
+- La CSP n'existe que sur la version servie par l'API (pas sur `ng serve`) : la vérifier sur une version de production (API publiée + site dans `wwwroot`).
+- Avant de fusionner une PR : les **4 jobs** de la CI au vert (API, Web, Image Docker, Playwright) ; pour une mise à jour d'outil de test, vérifier dans les journaux que les 122 tests ont bien tourné.
+- `api/appsettings.Development.json` contient une adresse et un numéro de gérant **fictifs** pour le mode test : ne jamais y mettre de vraies valeurs.
