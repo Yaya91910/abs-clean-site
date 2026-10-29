@@ -8,7 +8,7 @@ Le cahier des charges complet est dans [CLAUDE.md](CLAUDE.md) ; la référence v
 | `api/` | API ASP.NET Core 10 (Minimal API) — `Domain/` calcul du devis, `Endpoints/`, `Infrastructure/`, `Tests/` (xUnit) |
 | `web/` | Front Angular 22 — une section par composant dans `src/app/sections/` |
 | `assets/` | Logo source (SVG / PNG) |
-| `e2e/` | Tests Playwright (à venir) |
+| `e2e/` | Tests de bout en bout Playwright |
 
 ## Prérequis
 
@@ -60,6 +60,22 @@ dotnet test AbsClean.slnx
 cd web && npx ng test --watch=false
 ```
 
+### Parcours complet (Playwright)
+
+Les tests de bout en bout démarrent eux-mêmes une pile isolée : API sur le port 5288 avec sa propre base
+`abs_clean_e2e` (créée et migrée au démarrage), site sur le port 4300. Ils couvrent le parcours de devis
+complet à 1440, 820, 390 et 340 px (sans débordement horizontal), la FAQ, la fenêtre de coordonnées et le parrainage.
+
+```bash
+cd e2e && npm install && npx playwright install chromium
+```
+
+```bash
+cd e2e && npx playwright test
+```
+
+Autre base : variable `E2E_CONNECTION_STRING`. En CI, une base PostgreSQL jetable est fournie par le job `e2e`.
+
 ## API
 
 | Méthode | Route | État |
@@ -90,6 +106,8 @@ QuestPDF est utilisé sous licence *Community*, gratuite pour les entreprises de
 de chiffre d'affaires annuel.
 
 ## Configuration
+
+`Database__MigrerAuDemarrage=true` applique les migrations EF Core au démarrage de l'API (préproduction, tests de bout en bout).
 
 Toutes les clés et numéros passent par des variables d'environnement : voir [.env.example](.env.example).
 Ne jamais commiter de secret.
