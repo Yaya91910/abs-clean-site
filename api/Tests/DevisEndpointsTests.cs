@@ -1,13 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace AbsClean.Api.Tests;
 
-public class DevisEndpointsTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class DevisEndpointsTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreerClient();
 
     [Fact]
     public async Task Health_repond_ok()
