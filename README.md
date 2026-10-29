@@ -67,7 +67,7 @@ cd web && npx ng test --watch=false
 | GET | `/api/health` | ✅ |
 | GET | `/api/tarifs` | ✅ |
 | POST | `/api/devis/estimation` | ✅ |
-| POST | `/api/demandes` | ✅ enregistrement (PDF, e-mails, SMS à venir) |
+| POST | `/api/demandes` | ✅ enregistrement, PDF, e-mails client et gérant, SMS gérant |
 | GET | `/api/parrainage/{code}` et `/qr.svg` | à venir |
 | POST | `/api/admin/demandes/{id}/intervention-realisee` | à venir |
 
@@ -76,6 +76,18 @@ Les erreurs sont renvoyées au format `ProblemDetails`. Le total est toujours re
 `POST /api/demandes` : validation champ par champ (§8), champ piège `siteWeb` (honeypot), limitation à
 5 envois par IP et par fenêtre de 10 minutes (`RateLimit__Demandes__Limite`, `RateLimit__Demandes__FenetreMinutes`).
 Derrière un proxy (Render, Azure…), configurer les en-têtes transférés au déploiement pour que la limite s'applique à l'IP réelle du client.
+
+## Envois (PDF, e-mails, SMS)
+
+Après chaque demande enregistrée, l'API génère le devis PDF (QuestPDF), envoie un e-mail au client et au gérant
+(PDF joint) et un SMS au gérant, via Brevo. Chaque envoi est indépendant : un échec est journalisé et
+enregistré (`EmailClientEnvoye`, `EmailGerantEnvoye`, `SmsEnvoye`) sans bloquer les autres.
+
+**Mode test** : tant que `Email__ApiKey` / `Sms__ApiKey` sont vides, rien n'est envoyé ; les e-mails (HTML + PDF)
+et les SMS sont écrits dans `api/boite-envoi/` (ignoré par Git). C'est le cas en développement.
+
+QuestPDF est utilisé sous licence *Community*, gratuite pour les entreprises de moins d'un million de dollars
+de chiffre d'affaires annuel.
 
 ## Configuration
 

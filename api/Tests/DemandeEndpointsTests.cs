@@ -48,7 +48,7 @@ public class DemandeEndpointsTests(ApiFactory factory) : IClassFixture<ApiFactor
         Assert.Equal(265m, enregistree.Total);
         Assert.Equal("0612345678", enregistree.Telephone);
         Assert.Equal([Creneau.SemaineMatin, Creneau.Samedi], enregistree.Creneaux);
-        Assert.False(enregistree.SmsEnvoye);
+        Assert.True(enregistree.SmsEnvoye);
     }
 
     [Fact]

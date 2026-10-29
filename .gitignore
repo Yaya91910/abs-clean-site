@@ -25,3 +25,6 @@ dist/
 
 # Config locale Claude (chemins propres à la machine)
 .claude/launch.json
+
+# Mode test des envois (e-mails, PDF et SMS écrits en local)
+boite-envoi/
