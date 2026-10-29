@@ -21,8 +21,12 @@ public sealed class ServiceParrainage(
     /// <summary>QR code en PNG servi par l'API, pour les e-mails ; suppose /api servi sur le domaine du site (image Docker unique).</summary>
     public string LienQrPng(string code) => $"{site.Value.Base}/api/parrainage/{Uri.EscapeDataString(code)}/qr.png";
 
+    /// <summary>
+    /// Lien du gérant. Le jeton est placé après « # » : cette partie d'une adresse n'est jamais envoyée au serveur
+    /// (ni journaux, ni hébergeur) ; seule la page la lit, puis l'envoie dans le corps du POST de confirmation.
+    /// </summary>
     public string LienValidation(int demandeId, string jeton) =>
-        $"{site.Value.Base}/admin/intervention?demande={demandeId}&jeton={Uri.EscapeDataString(jeton)}";
+        $"{site.Value.Base}/admin/intervention#demande={demandeId}&jeton={Uri.EscapeDataString(jeton)}";
 
     public Task<bool> ExisteAsync(string code, CancellationToken ct) =>
         db.Demandes.AnyAsync(d => d.CodeParrainPersonnel == code, ct);
