@@ -1,38 +1,11 @@
 import { ChangeDetectionStrategy, Component, DOCUMENT, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ChampAvecErreur, CHAMPS_TEXTE, CRENEAUX, creerFormulaireCoordonnees, messageErreur } from '../core/coordonnees';
 import { Creneau, DemandeAcceptee, DemandesApi, ResultatEnvoi } from '../core/demandes-api';
 import { ParrainageApi } from '../core/parrainage-api';
 import { DevisStore } from '../core/devis-store';
 import { Fleche } from '../shared/fleche';
-
-/** Mêmes règles que la validation serveur (api/Domain/NouvelleDemande.cs). */
-const requis = (c: AbstractControl): ValidationErrors | null => ((c.value ?? '').toString().trim() ? null : { required: true });
-const telephoneFr = (c: AbstractControl): ValidationErrors | null =>
-  !c.value || /^0[1-79]\d{8}$/.test(c.value.replace(/ /g, '')) ? null : { telephone: true };
-const email = (c: AbstractControl): ValidationErrors | null =>
-  !c.value || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.value.trim()) ? null : { email: true };
-const codePostal = (c: AbstractControl): ValidationErrors | null => (!c.value || /^\d{5}$/.test(c.value.trim()) ? null : { codePostal: true });
-
-const MESSAGES: Record<string, Record<string, string>> = {
-  nom: { required: 'Le nom est requis.', maxlength: 'Le nom ne doit pas dépasser 60 caractères.' },
-  prenom: { required: 'Le prénom est requis.', maxlength: 'Le prénom ne doit pas dépasser 60 caractères.' },
-  telephone: { required: 'Le téléphone est requis.', telephone: 'Numéro de téléphone français invalide (ex. 06 12 34 56 78).' },
-  email: { required: "L'e-mail est requis.", email: 'Adresse e-mail invalide.' },
-  adresse: { required: "L'adresse d'intervention est requise.", maxlength: "L'adresse ne doit pas dépasser 200 caractères." },
-  codePostal: { required: 'Le code postal est requis.', codePostal: 'Le code postal doit contenir 5 chiffres.' },
-  ville: { required: 'La ville est requise.', maxlength: 'La ville ne doit pas dépasser 100 caractères.' },
-  acces: { maxlength: "L'accès ne doit pas dépasser 200 caractères." },
-  commentaire: { maxlength: 'Le commentaire ne doit pas dépasser 1000 caractères.' },
-  consentement: { required: 'Votre accord est nécessaire pour que nous puissions vous recontacter.' },
-};
-
-const CRENEAUX: { id: Creneau; libelle: string }[] = [
-  { id: 'semaineMatin', libelle: 'Semaine · matin' },
-  { id: 'semaineApresMidi', libelle: 'Semaine · après-midi' },
-  { id: 'samedi', libelle: 'Samedi' },
-];
-
-type Champ = keyof typeof MESSAGES;
 
 /**
  * Fenêtre de coordonnées (CLAUDE.md §8) : <dialog> natif ouvert en modal,
@@ -211,37 +184,14 @@ export class DevisModal {
   protected readonly etat = signal<'saisie' | 'envoi' | 'envoyee'>('saisie');
   protected readonly erreurGlobale = signal<string | null>(null);
   protected readonly acceptee = signal<DemandeAcceptee | null>(null);
+  /** Vrai après une tentative d'envoi : toutes les erreurs s'affichent, même sur les champs non visités. */
   private readonly tentative = signal(false);
-  /** Incrémenté à chaque changement d'erreurs pour rafraîchir la vue (OnPush). */
-  private readonly version = signal(0);
 
   protected readonly creneaux = CRENEAUX;
-  protected readonly champsTexte = [
-    { nom: 'nom', libelle: 'Nom', type: 'text', exemple: 'Dupont', autocomplete: 'family-name', inputmode: null, pleineLargeur: false },
-    { nom: 'prenom', libelle: 'Prénom', type: 'text', exemple: 'Marie', autocomplete: 'given-name', inputmode: null, pleineLargeur: false },
-    { nom: 'telephone', libelle: 'Téléphone', type: 'tel', exemple: '06 12 34 56 78', autocomplete: 'tel', inputmode: 'tel', pleineLargeur: false },
-    { nom: 'email', libelle: 'E-mail', type: 'email', exemple: 'marie@exemple.fr', autocomplete: 'email', inputmode: 'email', pleineLargeur: false },
-    { nom: 'adresse', libelle: "Adresse d'intervention", type: 'text', exemple: '12 rue des Lilas', autocomplete: 'street-address', inputmode: null, pleineLargeur: true },
-    { nom: 'codePostal', libelle: 'Code postal', type: 'text', exemple: '91000', autocomplete: 'postal-code', inputmode: 'numeric', pleineLargeur: false },
-    { nom: 'ville', libelle: 'Ville', type: 'text', exemple: 'Évry-Courcouronnes', autocomplete: 'address-level2', inputmode: null, pleineLargeur: false },
-    { nom: 'acces', libelle: 'Accès (étage, digicode…)', type: 'text', exemple: '3e étage, code 1234B', autocomplete: 'off', inputmode: null, pleineLargeur: true },
-    { nom: 'commentaire', libelle: 'Commentaire (facultatif)', type: 'text', exemple: "Précisions utiles : vitres difficiles d'accès, animaux…", autocomplete: 'off', inputmode: null, pleineLargeur: true },
-  ] as const;
-
-  protected readonly form = new FormGroup({
-    nom: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(60)] }),
-    prenom: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(60)] }),
-    telephone: new FormControl('', { nonNullable: true, validators: [requis, telephoneFr] }),
-    email: new FormControl('', { nonNullable: true, validators: [requis, email, Validators.maxLength(254)] }),
-    adresse: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(200)] }),
-    codePostal: new FormControl('', { nonNullable: true, validators: [requis, codePostal] }),
-    ville: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(100)] }),
-    acces: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
-    creneaux: new FormControl<Creneau[]>([], { nonNullable: true }),
-    commentaire: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(1000)] }),
-    consentement: new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
-    siteWeb: new FormControl('', { nonNullable: true }),
-  });
+  protected readonly champsTexte = CHAMPS_TEXTE;
+  protected readonly form = creerFormulaireCoordonnees();
+  /** Événements du formulaire (valeur, validité, champs visités, erreurs serveur) : la vue OnPush suit ce signal. */
+  private readonly evenementsForm = toSignal(this.form.events);
 
   ouvrir(): void {
     this.preremplirLocalisation();
@@ -271,24 +221,21 @@ export class DevisModal {
     }
   }
 
-  protected erreur(champ: Champ): string | null {
-    this.version();
-    const control = this.form.get(champ);
-    if (!control?.errors || !(control.touched || this.tentative())) return null;
-    if (control.errors['serveur']) return control.errors['serveur'];
-    const cle = Object.keys(control.errors)[0];
-    return MESSAGES[champ][cle === 'requiredTrue' ? 'required' : cle] ?? 'Valeur invalide.';
+  protected erreur(champ: ChampAvecErreur): string | null {
+    this.evenementsForm();
+    const control = this.form.controls[champ];
+    if (!control.errors || !(control.touched || this.tentative())) return null;
+    return messageErreur(champ, control.errors);
   }
 
   protected creneauChoisi(id: Creneau): boolean {
-    this.version();
+    this.evenementsForm();
     return this.form.controls.creneaux.value.includes(id);
   }
 
   protected basculerCreneau(id: Creneau): void {
     const actuels = this.form.controls.creneaux.value;
     this.form.controls.creneaux.setValue(actuels.includes(id) ? actuels.filter((c) => c !== id) : [...actuels, id]);
-    this.version.update((v) => v + 1);
   }
 
   protected envoyer(): void {
@@ -296,7 +243,6 @@ export class DevisModal {
     this.tentative.set(true);
     this.erreurGlobale.set(null);
     this.form.markAllAsTouched();
-    this.version.update((v) => v + 1);
 
     if (this.form.invalid) {
       this.focaliserPremiereErreur();
@@ -333,7 +279,6 @@ export class DevisModal {
           if (control) control.setErrors({ serveur: messages[0] });
           else this.erreurGlobale.set(messages[0]);
         }
-        this.version.update((v) => v + 1);
         this.focaliserPremiereErreur();
         return;
       case 'trop-de-demandes':
