@@ -45,7 +45,7 @@ import { Logo } from '../shared/logo';
     .head-cta:hover { transform: translateY(-2px) scale(1.04); }
     .head-cta::before { content: ""; position: absolute; inset: -5px; border-radius: 999px; border: 2px solid var(--accent); opacity: 0; animation: cta-ping 2.4s ease-out infinite; pointer-events: none; }
     .tag {
-      position: absolute; top: -10px; right: 14px; padding: 2px 8px; border-radius: 999px; background: var(--success); color: #FFFFFF;
+      position: absolute; top: -10px; right: 14px; padding: 2px 8px; border-radius: 999px; background: #157A4E; color: #FFFFFF; /* vert de la charte assombri : contraste AA du texte blanc */
       font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-shadow: none; box-shadow: 0 4px 10px -4px rgba(34, 181, 115, 0.7);
     }
     .arrow { width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.25); transition: transform .2s ease; }
