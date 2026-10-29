@@ -185,7 +185,7 @@ type Champ = keyof typeof MESSAGES;
     .ref-success { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: rgba(47, 111, 214, 0.06); border: 1px solid rgba(47, 111, 214, 0.15); text-align: left; }
     .qr-box.small { width: 92px; height: 92px; padding: 6px; border-radius: 14px; flex-shrink: 0; box-shadow: 0 8px 18px -10px rgba(21, 52, 95, 0.4); border: 1px solid #E3E8F0; }
     .ref-success-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-    .ref-label { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; }
+    .ref-label { font-size: 12px; font-weight: 700; color: var(--accent-texte); text-transform: uppercase; letter-spacing: 0.08em; }
     .ref-code { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: 0.04em; overflow-wrap: anywhere; }
     .ref-offre { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
     .succes .note-code { font-size: 13px; }
