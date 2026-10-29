@@ -23,3 +23,5 @@ dist/
 !.vscode/extensions.json
 .idea/
 
+# Mode test des envois (e-mails, PDF et SMS écrits en local)
+boite-envoi/
