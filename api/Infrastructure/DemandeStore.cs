@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using AbsClean.Api.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +20,7 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
     public async Task<DemandeEnregistree> EnregistrerAsync(NouvelleDemande d, ResultatDevis devis, CancellationToken ct)
     {
         var maintenant = horloge.GetUtcNow().UtcDateTime;
-        var jeton = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        var jeton = JetonIntervention.Nouveau();
         var demande = new Demande
         {
             CreeLe = maintenant,
@@ -44,7 +42,7 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
             Creneaux = d.Creneaux?.Distinct().ToList() ?? [],
             Commentaire = VideEnNull(d.Commentaire),
             ConsentementLe = maintenant,
-            JetonInterventionHash = Empreinte(jeton),
+            JetonInterventionHash = JetonIntervention.Empreinte(jeton),
         };
 
         var (statutCode, parrain) = await VerifierCodeSaisiAsync(CodeParrain.Normaliser(d.CodeParrainage), demande, ct);
@@ -57,7 +55,8 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
         // Deux envois simultanés peuvent viser le même numéro ou le même code : les index uniques tranchent, on réessaie.
         for (var tentative = 1; ; tentative++)
         {
-            demande.Numero = await NumeroSuivantAsync(maintenant.Year, ct);
+            // Année française : un devis du 1er janvier à 0 h 30 porte bien le numéro de la nouvelle année.
+            demande.Numero = await NumeroSuivantAsync(HeureParis.Depuis(maintenant).Year, ct);
             demande.CodeParrainPersonnel = await CodeLibreAsync(demande.Prenom, ct);
             db.Demandes.Add(demande);
             var parrainage = parrain is null ? null : new Parrainage { ParrainId = parrain.Id, Filleul = demande, CreeLe = maintenant };
@@ -74,8 +73,6 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
             }
         }
     }
-
-    public static string Empreinte(string jeton) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(jeton)));
 
     /// <summary>Anti-fraude : code inconnu ignoré, auto-parrainage refusé, un seul parrain par client.</summary>
     private async Task<(CodeParrainSaisi, Demande?)> VerifierCodeSaisiAsync(string? code, Demande filleul, CancellationToken ct)

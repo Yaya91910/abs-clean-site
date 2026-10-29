@@ -5,7 +5,7 @@ Le cahier des charges complet est dans [CLAUDE.md](CLAUDE.md) ; la référence v
 
 | Dossier | Contenu |
 |---|---|
-| `api/` | API ASP.NET Core 10 (Minimal API) — `Domain/` calcul du devis, `Endpoints/`, `Infrastructure/`, `Tests/` (xUnit) |
+| `api/` | API ASP.NET Core 10 (Minimal API) — `Configuration/` démarrage par thème, `Domain/` règles métier, `Endpoints/`, `Infrastructure/` (base, envois, parrainage), `Tests/` (xUnit) |
 | `web/` | Front Angular 22 — une section par composant dans `src/app/sections/` |
 | `assets/` | Logo source (SVG / PNG) |
 | `e2e/` | Tests de bout en bout Playwright |
@@ -99,8 +99,13 @@ Après chaque demande enregistrée, l'API génère le devis PDF (QuestPDF), envo
 (PDF joint) et un SMS au gérant, via Brevo. Chaque envoi est indépendant : un échec est journalisé et
 enregistré (`EmailClientEnvoye`, `EmailGerantEnvoye`, `SmsEnvoye`) sans bloquer les autres.
 
+Les envois partent **en arrière-plan** : le client reçoit sa réponse dès l'enregistrement. Au démarrage, l'API relance
+les demandes des dernières 48 h dont aucun envoi n'a abouti (redémarrage pendant les envois, Brevo indisponible).
+`Envois__EnArrierePlan=false` fait attendre les envois avant de répondre (utilisé par les tests).
+
 **Mode test** : tant que `Email__ApiKey` / `Sms__ApiKey` sont vides, rien n'est envoyé ; les e-mails (HTML + PDF)
-et les SMS sont écrits dans `api/boite-envoi/` (ignoré par Git). C'est le cas en développement.
+et les SMS sont écrits dans `api/boite-envoi/` (ignoré par Git). C'est le cas en développement. Hors développement,
+ce mode est signalé par une **erreur** au démarrage, et `/api/health` indique `"envois": { "email": "test" | "reel", "sms": … }`.
 
 QuestPDF est utilisé sous licence *Community*, gratuite pour les entreprises de moins d'un million de dollars
 de chiffre d'affaires annuel.

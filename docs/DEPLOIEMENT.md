@@ -18,7 +18,9 @@ tout est sur le même domaine (pas de CORS, liens et QR codes de parrainage coh�
    - `Site__Url` : l'adresse du service, `https://abs-clean-preprod.onrender.com` (à corriger après création si Render a choisi un autre nom) ;
    - Brevo (`Email__*`, `Sms__*`) et coordonnées (`Entreprise__*`) : **laisser vide** tant que le gérant ne les a pas fournies → envois en mode test, rien ne part.
 4. Valider. Le premier déploiement construit l'image (quelques minutes), applique les migrations (`Database__MigrerAuDemarrage=true`) puis démarre.
-5. Vérifier : `https://…onrender.com/api/health` répond `{"status":"ok"}`, puis faire un devis complet sur le site.
+5. Vérifier : `https://…onrender.com/api/health` répond `{"status":"ok", "envois": {…}}` (`"test"` tant que les clés Brevo
+   ne sont pas renseignées), puis faire un devis complet sur le site. Tester aussi l'aperçu de partage du lien
+   (WhatsApp, ou https://www.opengraph.xyz) : il utilise `Site__Url`.
 
 Ensuite, **chaque fusion dans `main` est déployée automatiquement, seulement si la CI GitHub est verte** (`autoDeployTrigger: checksPass`).
 
@@ -27,7 +29,7 @@ Ensuite, **chaque fusion dans `main` est déployée automatiquement, seulement s
 Une fois le compte Brevo créé par le gérant (e-mail transactionnel + crédits SMS, expéditeur vérifié), renseigner dans
 Render → service → *Environment* : `Email__ApiKey`, `Email__From`, `Email__GerantTo`, `Sms__ApiKey`, `Sms__Sender`
 (11 caractères alphanumériques max), `Sms__GerantNumero`. Le service redémarre : les envois partent pour de vrai.
-Tant qu'une clé manque, les journaux du service affichent « Mode test des envois ».
+Tant qu'une clé manque, les journaux du service affichent une erreur « Envois en MODE TEST » et `/api/health` indique `"test"`.
 
 ## 2. Production (validation manuelle)
 
