@@ -13,6 +13,7 @@ import { Parrainage } from './sections/parrainage';
 import { Reseaux } from './sections/reseaux';
 import { Footer } from './sections/footer';
 import { AdminIntervention } from './admin/intervention';
+import { TarifsApi } from './core/tarifs-api';
 
 @Component({
   selector: 'abs-root',
@@ -56,10 +57,13 @@ export class App {
   protected readonly pageAdmin = this.document.location.pathname === '/admin/intervention';
 
   constructor() {
-    // Lien de parrainage https://{domaine}/devis?parrain=CODE : on amène directement au formulaire.
-    const document = this.document;
+    // Lien de parrainage https://{domaine}/devis?parrain=CODE : on amène directement au formulaire,
+    // une fois les tarifs affichés (sinon leur arrivée repousse le formulaire plus bas).
+    if (this.document.location.pathname !== '/devis') return;
+    const tarifs = inject(TarifsApi);
     afterNextRender(() => {
-      if (document.location.pathname === '/devis') document.getElementById('devis')?.scrollIntoView();
+      const defiler = () => requestAnimationFrame(() => this.document.getElementById('devis')?.scrollIntoView());
+      tarifs.grille().subscribe({ next: defiler, error: defiler });
     });
   }
 }
