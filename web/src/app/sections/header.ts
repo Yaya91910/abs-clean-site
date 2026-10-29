@@ -33,14 +33,14 @@ import { Logo } from '../shared/logo';
     .brand { display: inline-flex; align-items: center; flex-shrink: 0; }
     .right { display: flex; align-items: center; gap: 22px; }
     .nav-links { display: flex; align-items: center; gap: 26px; }
-    .nav-links a { color: #3C4A5C; font-size: 13px; }
+    .nav-links a { color: #3C4A5C; font-size: 13px; white-space: nowrap; }
     .nav-links a:hover { color: var(--accent); }
     .head-cta {
       position: relative; display: inline-flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 6px 0 22px;
       border-radius: 999px; color: #FFFFFF; font-weight: 800; font-size: 16px; letter-spacing: -0.01em;
       background: linear-gradient(135deg, #4C9BE0 0%, var(--accent) 40%, #1A4791 100%);
       box-shadow: 0 14px 30px -10px rgba(15, 76, 149, 0.65), 0 0 0 4px rgba(47, 111, 214, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); transition: transform .2s ease, box-shadow .2s ease;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); transition: transform .2s ease, box-shadow .2s ease; white-space: nowrap;
     }
     .head-cta:hover { transform: translateY(-2px) scale(1.04); }
     .head-cta::before { content: ""; position: absolute; inset: -5px; border-radius: 999px; border: 2px solid var(--accent); opacity: 0; animation: cta-ping 2.4s ease-out infinite; pointer-events: none; }
@@ -50,7 +50,9 @@ import { Logo } from '../shared/logo';
     }
     .arrow { width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.25); transition: transform .2s ease; }
     .head-cta:hover .arrow { transform: translateX(3px); }
-    @media (max-width: 640px) { .nav-links { display: none; } }
+    @media (max-width: 900px) { .right { gap: 16px; } .nav-links { gap: 16px; } }
+    /* Maquette : menu masqué sous 640 px ; masqué dès 720 px pour que liens et bouton ne passent pas sur deux lignes. */
+    @media (max-width: 720px) { .nav-links { display: none; } }
     @media (max-width: 400px) {
       abs-logo ::ng-deep svg { height: 44px !important; }
       .head-cta { min-height: 46px; padding-left: 16px; font-size: 14px; gap: 9px; }
