@@ -19,14 +19,16 @@ const RESEAUX = {
             <p class="sub">Suivez nos interventions, nos avant/après et nos conseils d'entretien.</p>
           </div>
           <div class="social-row">
-            <a class="social-card tiktok" [href]="reseaux.tiktok.url" target="_blank" rel="noopener noreferrer" aria-label="ABS clean sur TikTok (nouvel onglet)">
+            <a class="social-card tiktok" [href]="reseaux.tiktok.url" target="_blank" rel="noopener noreferrer">
               <span class="social-ico" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v12" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /><circle cx="6.5" cy="18" r="2.5" stroke="#FFFFFF" stroke-width="1.8" /><circle cx="16.5" cy="16" r="2.5" stroke="#FFFFFF" stroke-width="1.8" /></svg></span>
               <span class="social-txt"><span class="social-name">TikTok</span><span class="social-handle">{{ reseaux.tiktok.identifiant }}</span></span>
+              <span class="visually-hidden">(nouvel onglet)</span>
               <span class="social-go" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
             </a>
-            <a class="social-card insta" [href]="reseaux.instagram.url" target="_blank" rel="noopener noreferrer" aria-label="ABS clean sur Instagram (nouvel onglet)">
+            <a class="social-card insta" [href]="reseaux.instagram.url" target="_blank" rel="noopener noreferrer">
               <span class="social-ico" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8.5A2.5 2.5 0 016.5 6h2l1.4-2h4.2l1.4 2h2A2.5 2.5 0 0120 8.5v8a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 16.5v-8z" stroke="#FFFFFF" stroke-width="1.8" stroke-linejoin="round" /><circle cx="12" cy="12.5" r="3.4" stroke="#FFFFFF" stroke-width="1.8" /></svg></span>
               <span class="social-txt"><span class="social-name">Instagram</span><span class="social-handle">{{ reseaux.instagram.identifiant }}</span></span>
+              <span class="visually-hidden">(nouvel onglet)</span>
               <span class="social-go" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
             </a>
           </div>

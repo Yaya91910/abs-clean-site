@@ -5,6 +5,7 @@
   --accent: #2F6FD6;
   --accent2: #4C9BE0;
   --accent-shadow: rgba(47, 111, 214, 0.35);
+  --accent-texte: #2559B8; /* accent assombri pour les petits textes sur fond teinté (contraste AA) */
   --text-muted: #5B6B80;
   --text-soft: #66778C; /* #7C8CA0 dans la maquette, assombri pour le contraste AA */
   --success: #22B573;
@@ -41,7 +42,7 @@ p.a-fournir { display: block; padding: 10px 14px; }
 @media (max-width: 600px) { .section { padding: 54px 16px; } }
 .container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center; gap: 36px; }
 .head { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.kicker { display: inline-flex; padding: 6px 14px; background: rgba(47, 111, 214, 0.1); color: var(--accent); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.kicker { display: inline-flex; padding: 6px 14px; background: rgba(47, 111, 214, 0.1); color: var(--accent-texte); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 .title { font-size: clamp(28px, 4vw, 40px); color: var(--ink); line-height: 1.1; }
 .sub { font-size: 16px; line-height: 1.6; color: var(--text-muted); max-width: 540px; margin: 0; }
 
