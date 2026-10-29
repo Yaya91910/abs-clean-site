@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/node_modules/
+web/dist/
+web/.angular/
+e2e/
+api/Tests/
+api/boite-envoi/
+.git/
+.github/
+.claude/
+.env*
+*.md
+maquette/

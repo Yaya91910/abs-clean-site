@@ -115,4 +115,9 @@ Ne jamais commiter de secret.
 ## Intégration continue
 
 GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) compile et teste l'API et le front à chaque push sur `main` et sur chaque pull request.
-Le déploiement (préproduction puis production) sera ajouté une fois l'hébergement choisi.
+Un job construit aussi l'image Docker de production.
+
+## Déploiement
+
+Image Docker unique (API + site) hébergée sur Render, région Francfort : préproduction déployée automatiquement
+depuis `main` quand la CI est verte, production sur validation manuelle. Pas à pas : [docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md).
