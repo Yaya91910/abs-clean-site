@@ -31,3 +31,19 @@ public sealed class EnvoiTestOptions
 {
     public string Dossier { get; set; } = "boite-envoi";
 }
+
+/// <summary>Envois après une demande (section « Envois »).</summary>
+public sealed class EnvoisOptions
+{
+    /// <summary>
+    /// true (par défaut) : la réponse part dès l'enregistrement et les envois suivent en arrière-plan.
+    /// false : la réponse attend la fin des envois (tests).
+    /// </summary>
+    public bool EnArrierePlan { get; set; } = true;
+}
+
+/// <summary>Envois réels (Brevo) ou mode test, selon la présence des clés d'API au démarrage.</summary>
+public sealed record ModeEnvois(bool EmailReel, bool SmsReel)
+{
+    public bool Complet => EmailReel && SmsReel;
+}
