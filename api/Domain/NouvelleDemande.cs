@@ -55,6 +55,15 @@ public static partial class ValidationDemande
             if ((valeur?.Trim().Length ?? 0) > max) Erreur(champ, $"{libelle} ne doit pas dépasser {max} caractères.");
         }
 
+        // Champs d'une ligne : pas de caractères de contrôle (retours à la ligne…), car ces valeurs vont
+        // dans l'objet de l'e-mail du gérant et dans le SMS. Le commentaire garde ses retours à la ligne.
+        foreach (var (champ, valeur) in new[] { ("nom", d.Nom), ("prenom", d.Prenom), ("telephone", d.Telephone), ("email", d.Email),
+                     ("adresse", d.Adresse), ("codePostal", d.CodePostal), ("ville", d.Ville), ("acces", d.Acces) })
+            if (valeur is not null && valeur.Any(char.IsControl))
+                Erreur(champ, "Caractères non autorisés.");
+        if (d.Commentaire is not null && d.Commentaire.Any(c => char.IsControl(c) && c is not ('\n' or '\r' or '\t')))
+            Erreur("commentaire", "Caractères non autorisés.");
+
         Requis("nom", d.Nom, 60, "Le nom");
         Requis("prenom", d.Prenom, 60, "Le prénom");
 

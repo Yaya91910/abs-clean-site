@@ -1,25 +1,53 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 
 namespace AbsClean.Api.Infrastructure;
 
 /// <summary>
-/// Page d'accueil du site compilé (wwwroot/index.html), servie avec l'adresse publique du site à la place de __SITE_URL__ :
-/// les aperçus de partage (Open Graph) exigent des adresses absolues.
+/// Page du site compilé (wwwroot/index.html), servie :
+/// - avec l'adresse publique du site à la place de __SITE_URL__ (les aperçus de partage exigent des adresses absolues) ;
+/// - avec une politique de contenu (CSP) qui n'autorise que les scripts du site et, par leur empreinte,
+///   les quelques scripts intégrés à la page par la compilation Angular.
 /// </summary>
-public sealed class PageIndex(IWebHostEnvironment env, IOptions<SiteOptions> site)
+public sealed partial class PageIndex(IWebHostEnvironment env, IOptions<SiteOptions> site)
 {
-    private readonly Lazy<string?> _html = new(() =>
+    private readonly Lazy<(string Html, string Csp)?> _page = new(() =>
     {
         var fichier = env.WebRootFileProvider.GetFileInfo("index.html");
         if (!fichier.Exists) return null;
         using var lecteur = new StreamReader(fichier.CreateReadStream());
-        return lecteur.ReadToEnd().Replace("__SITE_URL__", site.Value.Base);
+        var html = lecteur.ReadToEnd().Replace("__SITE_URL__", site.Value.Base);
+        return (html, PolitiqueDeContenu(html));
     });
 
     public IResult Servir(HttpContext http)
     {
-        if (_html.Value is not { } html) return Results.NotFound();
+        if (_page.Value is not var (html, csp)) return Results.NotFound();
         http.Response.Headers.CacheControl = "no-cache";
+        http.Response.Headers.ContentSecurityPolicy = csp;
         return Results.Content(html, "text/html; charset=utf-8");
     }
+
+    public static string PolitiqueDeContenu(string html)
+    {
+        var empreintes = ScriptIntegre().Matches(html)
+            .Select(m => $"'sha256-{Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(m.Groups[1].Value)))}'");
+        return string.Join("; ",
+            "default-src 'self'",
+            $"script-src 'self' {string.Join(' ', empreintes)}".TrimEnd(),
+            // Styles des composants Angular et attributs style : intégrés à la page.
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data:",
+            "font-src 'self'",
+            "connect-src 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'none'");
+    }
+
+    [GeneratedRegex(@"<script>(.*?)</script>", RegexOptions.Singleline)]
+    private static partial Regex ScriptIntegre();
 }

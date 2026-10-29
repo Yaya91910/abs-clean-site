@@ -31,6 +31,7 @@ export default defineConfig({
         ConnectionStrings__Default: process.env['E2E_CONNECTION_STRING'] ?? 'Host=localhost;Database=abs_clean_e2e',
         Database__MigrerAuDemarrage: 'true',
         RateLimit__Demandes__Limite: '10000',
+        RateLimit__Global__LimiteParMinute: '100000',
         Site__Url: `http://localhost:${WEB}`,
         Envoi__Test__Dossier: path.resolve('test-results/boite-envoi'),
       },

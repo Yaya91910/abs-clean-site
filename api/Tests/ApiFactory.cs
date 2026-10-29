@@ -38,6 +38,8 @@ public class ApiFactory : WebApplicationFactory<Program>
             db.Database.EnsureCreated();
 
         builder.UseSetting("RateLimit:Demandes:Limite", LimiteDemandes.ToString());
+        if (builder.GetSetting("RateLimit:Global:LimiteParMinute") is null)
+            builder.UseSetting("RateLimit:Global:LimiteParMinute", "100000");
         builder.UseSetting("Envois:EnArrierePlan", EnvoisEnArrierePlan.ToString());
         builder.UseSetting("Email:GerantTo", "gerant@example.com");
         builder.UseSetting("Sms:GerantNumero", "06 11 22 33 44");
