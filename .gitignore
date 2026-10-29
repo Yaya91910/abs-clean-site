@@ -22,3 +22,6 @@ dist/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Config locale Claude (chemins propres à la machine)
+.claude/launch.json
