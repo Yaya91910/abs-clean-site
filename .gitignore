@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+/e2e/test-results/
+/e2e/playwright-report/
+
+# Secrets et environnements locaux
+.env
+.env.*
+!.env.example
+*.db
+
+# Système / éditeurs
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
