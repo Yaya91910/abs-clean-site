@@ -1,6 +1,7 @@
 /**
  * Effets de la page d'accueil, sans dépendance :
  * - apparition en douceur des sections au défilement (celles déjà à l'écran au chargement s'affichent tout de suite) ;
+ * - halos du fond en pause quand le haut de page n'est plus visible ;
  * - halo lumineux qui suit le pointeur sur les cartes « verre ».
  * Rien n'est activé si l'utilisateur a demandé à réduire les animations (prefers-reduced-motion).
  */
@@ -23,6 +24,13 @@ export function activerEffets(document: Document): void {
       if (section.getBoundingClientRect().top < fenetre.innerHeight) continue;
       section.classList.add('a-reveler');
       observateur.observe(section);
+    }
+
+    // Halos du fond (haut de page) : animation en pause une fois le héros sorti de l'écran.
+    const page = document.querySelector('.page');
+    const heros = document.querySelector('abs-hero');
+    if (page && heros) {
+      new IntersectionObserver(([entree]) => page.classList.toggle('calme', !entree.isIntersecting)).observe(heros);
     }
   }
 

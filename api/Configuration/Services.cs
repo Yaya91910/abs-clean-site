@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -5,6 +6,7 @@ using AbsClean.Api.Endpoints;
 using AbsClean.Api.Infrastructure;
 using AbsClean.Api.Infrastructure.Envoi;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -92,7 +94,7 @@ public static class Services
     /// <summary>
     /// Derrière le proxy de l'hébergeur (Render) : IP réelle du client et schéma HTTPS d'origine.
     /// ForwardLimit = 1 : seule l'entrée ajoutée par le proxy compte, pas celles envoyées par le client.
-    /// CORS : inutile en production (site et API sur le même domaine), utile en développement.
+    /// Compression des fichiers du site. CORS : inutile en production (site et API sur le même domaine), utile en développement.
     /// </summary>
     public static WebApplicationBuilder AjouterHebergement(this WebApplicationBuilder builder)
     {
@@ -106,6 +108,18 @@ public static class Services
                 o.KnownProxies.Clear();
             });
         }
+
+        // Compression du site (HTML, scripts, styles, SVG) : ~4 fois moins de données sur mobile.
+        // Pas les réponses JSON de l'API : petites, et elles contiennent des données du client (prudence face à BREACH).
+        builder.Services.AddResponseCompression(o =>
+        {
+            o.EnableForHttps = true;
+            o.Providers.Add<BrotliCompressionProvider>();
+            o.Providers.Add<GzipCompressionProvider>();
+            o.MimeTypes = ["text/html", "text/css", "text/javascript", "application/javascript", "image/svg+xml"];
+        });
+        builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = CompressionLevel.Optimal);
+        builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Optimal);
 
         var origineAutorisee = builder.Configuration["Cors:AllowedOrigin"];
         builder.Services.AddCors(o => o.AddDefaultPolicy(p =>

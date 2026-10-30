@@ -90,8 +90,10 @@ p.a-fournir { display: block; padding: 10px 14px; }
 .btn-devis .label { position: relative; z-index: 1; white-space: nowrap; }
 .btn-devis .arrow { position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .2s ease; }
 .btn-devis:hover .arrow { transform: translateX(3px); }
-.btn-devis::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.18), transparent); transform: skewX(-20deg); animation: shine 9s ease-in-out infinite; }
-@keyframes shine { 0% { left: -60%; } 30% { left: 130%; } 100% { left: 130%; } }
+/* Reflet animé par transform (et non left) : la carte graphique s'en charge, sans recalcul de la page à chaque image.
+   Décalages en % de la largeur du reflet (40 % du bouton) : -150 % = -60 % du bouton, 325 % = 130 %. */
+.btn-devis::after { content: ""; position: absolute; top: 0; left: 0; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.18), transparent); transform: translateX(-150%) skewX(-20deg); animation: shine 9s ease-in-out infinite; }
+@keyframes shine { 0% { transform: translateX(-150%) skewX(-20deg); } 30%, 100% { transform: translateX(325%) skewX(-20deg); } }
 @media (max-width: 400px) { .btn-devis { font-size: 15px; padding-left: 22px; gap: 10px; } }
 
 .btn-devis.calc { min-height: 60px; }

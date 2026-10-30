@@ -375,6 +375,8 @@ Tests : API 128 (xUnit), site 22 (Vitest), Playwright 23 (dont accessibilité ax
 - **Page réorganisée et palette adoucie** (demande du gérant) : promesse → 3 étapes → prestations → tarifs → devis, la réassurance (avant/après, à propos, FAQ) vient après ; bleu `--accent` `#3D6CB5` (au lieu de `#2F6FD6`), bandeaux clairs `--brume` au lieu du bleu nuit, reflets et halos plus discrets. Vérifier le contraste AA (axe) de tout petit texte posé sur `--brume`.
 - **Effets** (`web/src/app/shared/effets.ts`) : apparition des sections au défilement (seulement sous la ligne de flottaison au chargement, pour ne rien masquer à axe ni à Lighthouse), halo qui suit le pointeur sur les cartes de verre, en-tête translucide, bandeau défilant (`defilant.ts`), curseur avant/après (`input range` invisible, donc clavier et lecteur d'écran). Tout est coupé avec `prefers-reduced-motion`.
 - **Deux gris et le vert du badge assombris** par rapport à la maquette, pour le contraste AA (§14).
+- **Poids et cache** : l'API compresse le site (Brotli/gzip : HTML, JS, CSS, SVG ; pas le JSON de l'API). Cache d'un an seulement pour les fichiers dont le nom porte une empreinte (`main-YZCV272D.js`), un jour pour les autres (favicon, image de partage, futures photos remplaçables sous le même nom). Logo inline de `index.html` simplifié (courbes réajustées : 7 Ko au lieu de 80 Ko) ; le fichier maître `assets/abs-clean-logo.svg` n'a pas changé.
+- **Animations sobres** : reflet des boutons animé par `transform` (pas `left`) ; halos du fond en pause quand le héros sort de l'écran ; halos et pastilles flottantes immobiles sous 720 px (surfaces floutées).
 
 ### Lancer et tester (sur ce Mac)
 

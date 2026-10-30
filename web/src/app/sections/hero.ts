@@ -72,6 +72,8 @@ import { Fleche } from '../shared/fleche';
     .flottant.haut { top: 28px; left: -14px; }
     .flottant.bas { bottom: 30px; right: -14px; animation-delay: -3.5s; }
     @keyframes flotter { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+    /* Sur téléphone, pastilles immobiles : une surface floutée qui bouge oblige à recalculer le flou à chaque image. */
+    @media (max-width: 719px) { .flottant { animation: none; } }
     @media (max-width: 520px) { .flottant.haut { left: 18px; } .flottant.bas { right: 18px; } }
     .hero-visual {
       width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; background: linear-gradient(135deg, var(--brume), #F7FAFD);
