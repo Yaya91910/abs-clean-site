@@ -143,6 +143,7 @@ public class SiteFactory : ApiFactory
         File.WriteAllText(Path.Combine(Racine, "index.html"),
             """<html><head><meta property="og:image" content="__SITE_URL__/og-image.png"></head><body>site</body></html>""");
         File.WriteAllText(Path.Combine(Racine, "logo.svg"), "<svg/>");
+        File.WriteAllText(Path.Combine(Racine, "main-YZCV272D.js"), string.Concat(Enumerable.Repeat("console.log('ABS clean');\n", 200)));
         builder.UseWebRoot(Racine);
         base.ConfigureWebHost(builder);
     }
@@ -176,11 +177,36 @@ public class SiteTests(SiteFactory factory) : IClassFixture<SiteFactory>
     {
         var client = factory.CreerClient();
 
+        // Nom avec empreinte : en cache un an ; nom fixe (remplaçable, ex. photo) : un jour.
+        var script = await client.GetAsync("/main-YZCV272D.js");
+        Assert.Equal(HttpStatusCode.OK, script.StatusCode);
+        Assert.Equal("public, max-age=31536000, immutable", script.Headers.CacheControl?.ToString());
         var logo = await client.GetAsync("/logo.svg");
         Assert.Equal(HttpStatusCode.OK, logo.StatusCode);
-        Assert.Contains("immutable", logo.Headers.CacheControl?.ToString());
+        Assert.Equal("public, max-age=86400", logo.Headers.CacheControl?.ToString());
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/absent.png")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/inexistant")).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("br")]
+    [InlineData("gzip")]
+    public async Task Le_site_est_compresse_mais_pas_les_reponses_json(string encodage)
+    {
+        var client = factory.CreerClient();
+
+        foreach (var adresse in new[] { "/", "/main-YZCV272D.js" })
+        {
+            var requete = new HttpRequestMessage(HttpMethod.Get, adresse);
+            requete.Headers.AcceptEncoding.ParseAdd(encodage);
+            var reponse = await client.SendAsync(requete);
+            Assert.Equal(HttpStatusCode.OK, reponse.StatusCode);
+            Assert.Equal([encodage], reponse.Content.Headers.ContentEncoding);
+        }
+
+        var api = new HttpRequestMessage(HttpMethod.Get, "/api/health");
+        api.Headers.AcceptEncoding.ParseAdd(encodage);
+        Assert.Empty((await client.SendAsync(api)).Content.Headers.ContentEncoding);
     }
 
     [Fact]

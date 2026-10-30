@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AbsClean.Api.Endpoints;
 using AbsClean.Api.Infrastructure;
 using AbsClean.Api.Infrastructure.Envoi;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AbsClean.Api.Configuration;
 
 /// <summary>Démarrage et chaîne de traitement des requêtes (appelés depuis Program.cs).</summary>
-public static class Pipeline
+public static partial class Pipeline
 {
     /// <summary>Applique les migrations au démarrage si Database__MigrerAuDemarrage=true (préproduction, tests de bout en bout).</summary>
     public static WebApplication MigrerSiDemande(this WebApplication app)
@@ -31,7 +32,7 @@ public static class Pipeline
         return app;
     }
 
-    /// <summary>En-têtes du proxy, erreurs, HSTS, fichiers statiques du site, puis routage, CORS et limitation de débit.</summary>
+    /// <summary>En-têtes du proxy, erreurs, HSTS, compression, fichiers statiques du site, puis routage, CORS et limitation de débit.</summary>
     public static WebApplication UtiliserChaine(this WebApplication app)
     {
         if (app.Configuration.GetValue<bool>("Proxy:EntetesTransferees"))
@@ -42,11 +43,17 @@ public static class Pipeline
         if (!app.Environment.IsDevelopment())
             app.UseHsts();
 
-        // Fichiers versionnés du site (wwwroot, présent dans l'image Docker) : en cache un an.
+        app.UseResponseCompression();
+
+        // Fichiers du site (wwwroot, présent dans l'image Docker). Ceux dont le nom porte une empreinte
+        // (main-YZCV272D.js) changent de nom à chaque version : en cache un an. Les autres (favicon, image
+        // de partage, photos) peuvent être remplacés sous le même nom : un jour seulement.
         // index.html est servi à part (PageIndex), jamais mis en cache.
         app.UseStaticFiles(new StaticFileOptions
         {
-            OnPrepareResponse = c => c.Context.Response.Headers.CacheControl = "public, max-age=31536000, immutable",
+            OnPrepareResponse = c => c.Context.Response.Headers.CacheControl = FichierVersionne().IsMatch(c.File.Name)
+                ? "public, max-age=31536000, immutable"
+                : "public, max-age=86400",
         });
         // Routage explicitement après les fichiers statiques : sinon la route de repli (index.html)
         // est choisie avant eux et le site ne reçoit jamais ses scripts ni ses images.
@@ -74,4 +81,8 @@ public static class Pipeline
         app.MapFallback("{*chemin:regex(^(?!api(/|$)).*$):nonfile}", page.Servir);
         return app;
     }
+
+    /// <summary>Nom avec l'empreinte ajoutée par la compilation Angular (outputHashing) : main-YZCV272D.js, inter-latin-wght-normal-NRMW37G5.woff2.</summary>
+    [GeneratedRegex(@"-[A-Z0-9]{8}\.[a-z0-9]+$")]
+    private static partial Regex FichierVersionne();
 }

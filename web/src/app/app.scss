@@ -27,6 +27,11 @@
   &.c { top: 560px; left: 30%; width: 420px; height: 420px; opacity: 0.22; animation-duration: 40s; background: radial-gradient(circle, #A9C9EC 0%, transparent 65%); }
 }
 
+/* Halos immobiles sur téléphone (les cartes floutées posées dessus seraient recalculées à chaque image),
+   et en pause ailleurs dès que le haut de page est sorti de l'écran (classe posée par effets.ts). */
+@media (max-width: 719px) { .halo { animation: none; will-change: auto; } }
+.page.calme .halo { animation-play-state: paused; }
+
 @keyframes drift {
   0% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(40px, -30px) scale(1.08); }
