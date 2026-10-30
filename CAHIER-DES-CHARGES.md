@@ -348,7 +348,7 @@ Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le 
 | #21, #22 | Cette section d'état, bilan de santé hebdomadaire (`docs/BILAN-HEBDO.md`) |
 | #23 | Fiche client : numéro `CLI-00001` sans doublon, deux PDF distincts (devis client / fiche d'intervention gérant), bandeau « Client existant », accueil « Bon retour » sur le site |
 
-Tests : API 128 (xUnit), site 22 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+Tests : API 128 (xUnit), site 31 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
 
 ### Reste à faire
 
@@ -377,6 +377,13 @@ Tests : API 128 (xUnit), site 22 (Vitest), Playwright 23 (dont accessibilité ax
 - **Deux gris et le vert du badge assombris** par rapport à la maquette, pour le contraste AA (§14).
 - **Poids et cache** : l'API compresse le site (Brotli/gzip : HTML, JS, CSS, SVG ; pas le JSON de l'API). Cache d'un an seulement pour les fichiers dont le nom porte une empreinte (`main-YZCV272D.js`), un jour pour les autres (favicon, image de partage, futures photos remplaçables sous le même nom). Logo inline de `index.html` simplifié (courbes réajustées : 7 Ko au lieu de 80 Ko) ; le fichier maître `assets/abs-clean-logo.svg` n'a pas changé.
 - **Animations sobres** : reflet des boutons animé par `transform` (pas `left`) ; halos du fond en pause quand le héros sort de l'écran ; halos et pastilles flottantes immobiles sous 720 px (surfaces floutées).
+- **Expérience** : buée à essuyer sur le visuel du héros (`shared/buee.ts`, coup de raclette de démonstration, « Impeccable ! » à 55 % essuyé ; fond « ciel » provisoire en attendant la photo) ; estimation qui défile (`shared/montant.ts`, visuel seulement — le texte final est annoncé à part, et `.estimate-val` garde le texte final pour Playwright) ; confettis à l'écran de succès (`shared/confettis.ts`) ; menu qui suit la section lue (`aria-current`). Tout est coupé avec `prefers-reduced-motion`.
+- **Téléphone** : barre d'estimation en bas d'écran dans la section devis quand l'estimation n'est pas visible ; son bouton s'appelle « Continuer » (pas « Valider mon devis », qui doit rester unique pour les tests).
+- **Mémoire du devis** : profil, fréquence et quantités gardés dans le navigateur (`localStorage`, clé `abs-clean.devis`, aucune donnée personnelle, relus avec contrôle) ; note « Vos choix de la dernière visite ont été gardés » avec remise à zéro. Les tests du site vident le stockage avant chaque test.
+- **Tarifs** : 3 nouvelles tentatives espacées si `/api/tarifs` échoue (sinon l'estimation restait vide jusqu'au rechargement).
+- **Précompression** : le Dockerfile lance `web/scripts/precompresser.mjs` après `ng build` (Brotli niveau 11 + gzip) ; l'API sert ces fichiers (`FichiersPrecompresses`), la compression à la volée ne sert qu'en l'absence de fichier précompressé.
+- **Référencement** : `/robots.txt` et `/sitemap.xml` générés par l'API avec `Site__Url` ; données structurées JSON-LD (`LocalBusiness`) dans `index.html`, sans adresse ni téléphone tant qu'ils ne sont pas fournis ; `X-Robots-Tag: noindex` sur `/admin/…`.
+- **En-têtes** : `Permissions-Policy` étendue, `X-Permitted-Cross-Domain-Policies: none`, CSP avec `frame-src 'none'` et `worker-src 'none'`.
 
 ### Lancer et tester (sur ce Mac)
 

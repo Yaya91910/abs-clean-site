@@ -36,6 +36,7 @@ describe('Devis et fenêtre de coordonnées', () => {
   }
 
   beforeEach(() => {
+    localStorage.clear(); // choix du devis mémorisés par un test précédent
     TestBed.configureTestingModule({ imports: [Devis], providers: [provideHttpClient(), provideHttpClientTesting()] });
     http = TestBed.inject(HttpTestingController);
   });

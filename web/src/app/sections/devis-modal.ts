@@ -5,6 +5,7 @@ import { ChampAvecErreur, CHAMPS_TEXTE, CRENEAUX, creerFormulaireCoordonnees, me
 import { Creneau, DemandeAcceptee, DemandesApi, ResultatEnvoi } from '../core/demandes-api';
 import { ParrainageApi } from '../core/parrainage-api';
 import { DevisStore } from '../core/devis-store';
+import { Confettis } from '../shared/confettis';
 import { Fleche } from '../shared/fleche';
 
 /**
@@ -14,7 +15,7 @@ import { Fleche } from '../shared/fleche';
 @Component({
   selector: 'abs-devis-modal',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Fleche],
+  imports: [ReactiveFormsModule, Fleche, Confettis],
   template: `
     <dialog #dialog class="modal-card" aria-labelledby="modal-title" (close)="apresFermeture()">
       <button type="button" class="modal-close" aria-label="Fermer" (click)="fermer()">×</button>
@@ -90,6 +91,7 @@ import { Fleche } from '../shared/fleche';
       } @else {
         <div class="succes" role="status">
           <div class="succes-ico" aria-hidden="true">
+            <abs-confettis />
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </div>
           @if (acceptee(); as a) {
@@ -164,7 +166,8 @@ import { Fleche } from '../shared/fleche';
     .globale { width: 100%; text-align: center; margin: 0; order: 1; }
 
     .succes { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; padding: 20px 4px; }
-    .succes-ico { width: 72px; height: 72px; border-radius: 999px; background: linear-gradient(135deg, #3FD08F, var(--success)); display: flex; align-items: center; justify-content: center; box-shadow: 0 14px 30px -12px rgba(34, 181, 115, 0.7); }
+    .succes-ico { position: relative; animation: succes-pop .5s cubic-bezier(.3, 1.6, .5, 1); width: 72px; height: 72px; border-radius: 999px; background: linear-gradient(135deg, #3FD08F, var(--success)); display: flex; align-items: center; justify-content: center; box-shadow: 0 14px 30px -12px rgba(34, 181, 115, 0.7); }
+    @keyframes succes-pop { from { transform: scale(.4); } }
     .succes h3 { font-size: 24px; }
     .succes p { font-size: 15px; color: var(--text-muted); margin: 0; max-width: 360px; line-height: 1.6; }
     .ref-success { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: rgba(61, 108, 181, 0.06); border: 1px solid rgba(61, 108, 181, 0.15); text-align: left; }

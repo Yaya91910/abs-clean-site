@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DOCUMENT, afterNextRender, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, DOCUMENT, afterNextRender, inject, signal } from '@angular/core';
 import { Fleche } from '../shared/fleche';
 import { Logo } from '../shared/logo';
 
@@ -12,11 +12,9 @@ import { Logo } from '../shared/logo';
       <a href="/" class="brand" aria-label="ABS clean, retour en haut de page"><abs-logo [hauteur]="56" /></a>
       <div class="right">
         <nav aria-label="Navigation principale" class="nav-links">
-          <a href="/#prestations">Prestations</a>
-          <a href="/#tarifs">Tarifs</a>
-          <a href="/#qui-sommes-nous">À propos</a>
-          <a href="/#faq">FAQ</a>
-          <a href="/#parrainage">Parrainage</a>
+          @for (lien of liens; track lien.id) {
+            <a [href]="'/#' + lien.id" [attr.aria-current]="actif() === lien.id ? 'location' : null">{{ lien.libelle }}</a>
+          }
         </nav>
         <a href="/#devis" class="head-cta">
           <span class="tag">2 min</span>Devis gratuit<span class="arrow"><abs-fleche [taille]="18" /></span>
@@ -38,6 +36,11 @@ import { Logo } from '../shared/logo';
     .nav-links { display: flex; align-items: center; gap: 26px; }
     .nav-links a { color: #3C4A5C; font-size: 13px; white-space: nowrap; }
     .nav-links a:hover { color: var(--accent); }
+    /* Section en cours de lecture : lien en couleur, souligné d'un trait qui se déploie. */
+    .nav-links a { position: relative; padding: 4px 0; transition: color .2s ease; }
+    .nav-links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transition: transform .3s ease; }
+    .nav-links a[aria-current] { color: var(--accent); } /* même graisse : le menu ne bouge pas */
+    .nav-links a[aria-current]::after { transform: scaleX(1); }
     .head-cta {
       position: relative; display: inline-flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 6px 0 22px;
       border-radius: 999px; color: #FFFFFF; font-weight: 700; font-size: 16px; letter-spacing: -0.01em;
@@ -64,14 +67,43 @@ import { Logo } from '../shared/logo';
 })
 export class Header {
   protected readonly defile = signal(false);
+  protected readonly liens = [
+    { id: 'prestations', libelle: 'Prestations' },
+    { id: 'tarifs', libelle: 'Tarifs' },
+    { id: 'qui-sommes-nous', libelle: 'À propos' },
+    { id: 'faq', libelle: 'FAQ' },
+    { id: 'parrainage', libelle: 'Parrainage' },
+  ];
+  /** Section du menu en cours de lecture (celle qui traverse le milieu de l'écran), ou null. */
+  protected readonly actif = signal<string | null>(null);
 
   constructor() {
-    const fenetre = inject(DOCUMENT).defaultView;
+    const document = inject(DOCUMENT);
+    const fenetre = document.defaultView;
+    const destruction = inject(DestroyRef);
     afterNextRender(() => {
       if (!fenetre) return;
       const suivre = () => this.defile.set(fenetre.scrollY > 8);
       fenetre.addEventListener('scroll', suivre, { passive: true });
       suivre();
+
+      if (!('IntersectionObserver' in fenetre)) return;
+      const visibles = new Set<string>();
+      const observateur = new IntersectionObserver(
+        (entrees) => {
+          for (const entree of entrees) {
+            if (entree.isIntersecting) visibles.add(entree.target.id);
+            else visibles.delete(entree.target.id);
+          }
+          this.actif.set(this.liens.find((l) => visibles.has(l.id))?.id ?? null);
+        },
+        { rootMargin: '-45% 0px -50% 0px' },
+      );
+      for (const lien of this.liens) {
+        const section = document.getElementById(lien.id);
+        if (section) observateur.observe(section);
+      }
+      destruction.onDestroy(() => observateur.disconnect());
     });
   }
 }

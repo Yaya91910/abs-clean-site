@@ -144,6 +144,8 @@ public class SiteFactory : ApiFactory
             """<html><head><meta property="og:image" content="__SITE_URL__/og-image.png"></head><body>site</body></html>""");
         File.WriteAllText(Path.Combine(Racine, "logo.svg"), "<svg/>");
         File.WriteAllText(Path.Combine(Racine, "main-YZCV272D.js"), string.Concat(Enumerable.Repeat("console.log('ABS clean');\n", 200)));
+        // Version Brotli « précompressée » (contenu factice reconnaissable : le serveur doit l'envoyer telle quelle).
+        File.WriteAllBytes(Path.Combine(Racine, "main-YZCV272D.js.br"), [0x0B, 0x42, 0x52]);
         builder.UseWebRoot(Racine);
         base.ConfigureWebHost(builder);
     }
@@ -207,6 +209,48 @@ public class SiteTests(SiteFactory factory) : IClassFixture<SiteFactory>
         var api = new HttpRequestMessage(HttpMethod.Get, "/api/health");
         api.Headers.AcceptEncoding.ParseAdd(encodage);
         Assert.Empty((await client.SendAsync(api)).Content.Headers.ContentEncoding);
+    }
+
+    [Fact]
+    public async Task La_version_precompressee_est_servie_telle_quelle_avec_le_bon_type()
+    {
+        var requete = new HttpRequestMessage(HttpMethod.Get, "/main-YZCV272D.js");
+        requete.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
+        var reponse = await factory.CreerClient().SendAsync(requete);
+
+        Assert.Equal(HttpStatusCode.OK, reponse.StatusCode);
+        Assert.Equal(["br"], reponse.Content.Headers.ContentEncoding);
+        Assert.Equal("text/javascript", reponse.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("public, max-age=31536000, immutable", reponse.Headers.CacheControl?.ToString());
+        Assert.Contains("Accept-Encoding", reponse.Headers.Vary);
+        Assert.Equal([0x0B, 0x42, 0x52], await reponse.Content.ReadAsByteArrayAsync());
+    }
+
+    [Fact]
+    public async Task Robots_et_plan_du_site_utilisent_l_adresse_publique()
+    {
+        var client = factory.CreerClient();
+
+        var robots = await client.GetStringAsync("/robots.txt");
+        Assert.Contains("Disallow: /admin/", robots);
+        Assert.Contains("Disallow: /api/", robots);
+        Assert.Contains("Sitemap: https://abs-clean.test/sitemap.xml", robots);
+
+        var plan = await client.GetAsync("/sitemap.xml");
+        Assert.Equal("application/xml", plan.Content.Headers.ContentType?.MediaType);
+        var xml = System.Xml.Linq.XDocument.Parse(await plan.Content.ReadAsStringAsync());
+        var adresses = xml.Descendants().Where(e => e.Name.LocalName == "loc").Select(e => e.Value).ToList();
+        Assert.Equal(["https://abs-clean.test/", "https://abs-clean.test/mentions-legales", "https://abs-clean.test/confidentialite", "https://abs-clean.test/parrainage/conditions"], adresses);
+    }
+
+    [Fact]
+    public async Task La_page_du_gerant_n_est_pas_indexee()
+    {
+        var client = factory.CreerClient();
+
+        var admin = await client.GetAsync("/admin/intervention");
+        Assert.Equal("noindex, nofollow", string.Join(", ", admin.Headers.GetValues("X-Robots-Tag")));
+        Assert.False((await client.GetAsync("/")).Headers.Contains("X-Robots-Tag"));
     }
 
     [Fact]
