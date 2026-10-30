@@ -92,9 +92,21 @@ import { Fleche } from '../shared/fleche';
           <div class="succes-ico" aria-hidden="true">
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </div>
-          <h3 id="modal-title">Demande envoyée !</h3>
-          <p>Votre devis en PDF vient de partir dans votre boîte mail. ABS clean vous recontacte rapidement pour fixer l'intervention.</p>
           @if (acceptee(); as a) {
+            <h3 id="modal-title">{{ a.clientReconnu ? 'Bon retour, ' + prenomEnvoye() + ' !' : 'Demande envoyée !' }}</h3>
+            <p>Votre devis en PDF vient de partir dans votre boîte mail. ABS clean vous recontacte rapidement pour fixer l'intervention.</p>
+            <p class="numero-client">Votre numéro client : <strong>{{ a.numeroClient }}</strong></p>
+            @if (a.clientReconnu && a.contact; as contact) {
+              <div class="contact-direct">
+                <span class="contact-titre">Déjà client ? Contactez-nous directement</span>
+                @if (contact.telephone; as telephone) {
+                  <a [href]="lienTelephone(telephone)" class="contact-lien">📞 {{ telephone }}</a>
+                }
+                @if (contact.email; as email) {
+                  <a [href]="'mailto:' + email" class="contact-lien">✉ {{ email }}</a>
+                }
+              </div>
+            }
             <div class="ref-success">
               <div class="qr-box small"><img [src]="parrainageApi.qrSvg(a.codeParrain)" alt="QR code de votre lien de parrainage" width="80" height="80" /></div>
               <div class="ref-success-txt">
@@ -162,6 +174,10 @@ import { Fleche } from '../shared/fleche';
     .ref-code { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: 0.04em; overflow-wrap: anywhere; }
     .ref-offre { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
     .succes .note-code { font-size: 13px; }
+    .succes .numero-client { font-size: 14px; color: var(--ink); }
+    .contact-direct { width: 100%; padding: 12px 14px; border-radius: 16px; background: #E8F1FF; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .contact-titre { font-size: 12px; font-weight: 700; color: var(--accent-texte); text-transform: uppercase; letter-spacing: 0.06em; }
+    .contact-lien { font-size: 16px; font-weight: 700; color: var(--accent-texte); overflow-wrap: anywhere; }
 
     @media (max-width: 520px) {
       .modal-card { padding: 20px 16px; border-radius: 22px; width: calc(100% - 24px); }
@@ -184,6 +200,8 @@ export class DevisModal {
   protected readonly etat = signal<'saisie' | 'envoi' | 'envoyee'>('saisie');
   protected readonly erreurGlobale = signal<string | null>(null);
   protected readonly acceptee = signal<DemandeAcceptee | null>(null);
+  /** Prénom saisi, pour l'accueil personnalisé d'un client reconnu. */
+  protected readonly prenomEnvoye = signal('');
   /** Vrai après une tentative d'envoi : toutes les erreurs s'affichent, même sur les champs non visités. */
   private readonly tentative = signal(false);
 
@@ -228,6 +246,10 @@ export class DevisModal {
     return messageErreur(champ, control.errors);
   }
 
+  protected lienTelephone(telephone: string): string {
+    return 'tel:' + telephone.replace(/\s/g, '');
+  }
+
   protected creneauChoisi(id: Creneau): boolean {
     this.evenementsForm();
     return this.form.controls.creneaux.value.includes(id);
@@ -251,6 +273,7 @@ export class DevisModal {
 
     const v = this.form.getRawValue();
     const q = this.store.quantites();
+    this.prenomEnvoye.set(v.prenom.trim());
     this.etat.set('envoi');
     this.api
       .envoyer({

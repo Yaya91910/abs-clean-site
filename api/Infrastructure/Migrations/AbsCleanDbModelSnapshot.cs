@@ -22,6 +22,54 @@ namespace AbsClean.Api.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AbsClean.Api.Domain.Client", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreeLe")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("Prenom")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Telephone")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email");
+
+                    b.HasIndex("Numero")
+                        .IsUnique();
+
+                    b.HasIndex("Telephone");
+
+                    b.ToTable("Clients");
+                });
+
             modelBuilder.Entity("AbsClean.Api.Domain.Demande", b =>
                 {
                     b.Property<int>("Id")
@@ -38,6 +86,9 @@ namespace AbsClean.Api.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("CodeParrainPersonnel")
                         .IsRequired()
@@ -150,6 +201,8 @@ namespace AbsClean.Api.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClientId");
+
                     b.HasIndex("CodeParrainPersonnel")
                         .IsUnique();
 
@@ -205,10 +258,18 @@ namespace AbsClean.Api.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsClean.Api.Domain.Demande", b =>
                 {
+                    b.HasOne("AbsClean.Api.Domain.Client", "Client")
+                        .WithMany("Demandes")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("AbsClean.Api.Domain.Demande", null)
                         .WithMany()
                         .HasForeignKey("ParrainId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("AbsClean.Api.Domain.Parrainage", b =>
@@ -228,6 +289,11 @@ namespace AbsClean.Api.Infrastructure.Migrations
                     b.Navigation("Filleul");
 
                     b.Navigation("Parrain");
+                });
+
+            modelBuilder.Entity("AbsClean.Api.Domain.Client", b =>
+                {
+                    b.Navigation("Demandes");
                 });
 #pragma warning restore 612, 618
         }

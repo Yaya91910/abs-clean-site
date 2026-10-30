@@ -7,7 +7,11 @@ namespace AbsClean.Api.Infrastructure;
 public enum CodeParrainSaisi { Aucun, Applique, Inconnu, AutoParrainage, DejaParraine }
 
 /// <param name="JetonIntervention">Jeton brut du lien « intervention réalisée » envoyé au gérant ; seule son empreinte est stockée.</param>
-public sealed record DemandeEnregistree(Demande Demande, string JetonIntervention, CodeParrainSaisi CodeParrain);
+/// <param name="ClientReconnu">
+/// Client déjà connu avec le même e-mail ET le même téléphone : seul ce cas est signalé au navigateur
+/// (un seul des deux ne suffit pas, sinon n'importe qui pourrait savoir si une adresse e-mail est cliente).
+/// </param>
+public sealed record DemandeEnregistree(Demande Demande, string JetonIntervention, CodeParrainSaisi CodeParrain, bool ClientReconnu);
 
 /// <summary>
 /// Enregistre les demandes avec un numéro de devis unique (ABS-2026-0001), un code de parrainage personnel
@@ -52,9 +56,23 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
             demande.ParrainId = parrain.Id;
         }
 
+        // Client existant (même e-mail ou même téléphone) ou nouveau client.
+        var existant = await ClientExistantAsync(demande, ct);
+        var clientReconnu = existant is not null && existant.Email == demande.Email.ToLowerInvariant() && existant.Telephone == demande.Telephone;
+        demande.Client = existant ?? new Client
+        {
+            CreeLe = maintenant,
+            Nom = demande.Nom,
+            Prenom = demande.Prenom,
+            Telephone = demande.Telephone,
+            Email = demande.Email.ToLowerInvariant(),
+        };
+
         // Deux envois simultanés peuvent viser le même numéro ou le même code : les index uniques tranchent, on réessaie.
         for (var tentative = 1; ; tentative++)
         {
+            if (demande.Client.Id == 0)
+                demande.Client.Numero = await NumeroClientSuivantAsync(ct);
             // Année française : un devis du 1er janvier à 0 h 30 porte bien le numéro de la nouvelle année.
             demande.Numero = await NumeroSuivantAsync(HeureParis.Depuis(maintenant).Year, ct);
             demande.CodeParrainPersonnel = await CodeLibreAsync(demande.Prenom, ct);
@@ -64,14 +82,36 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
             try
             {
                 await db.SaveChangesAsync(ct);
-                return new DemandeEnregistree(demande, jeton, statutCode);
+                return new DemandeEnregistree(demande, jeton, statutCode, clientReconnu);
             }
             catch (DbUpdateException) when (tentative < TentativesMax)
             {
                 db.Entry(demande).State = EntityState.Detached;
+                if (demande.Client.Id == 0) db.Entry(demande.Client).State = EntityState.Detached;
                 if (parrainage is not null) db.Entry(parrainage).State = EntityState.Detached;
             }
         }
+    }
+
+    /// <summary>Un client est reconnu par son e-mail (prioritaire) ou, à défaut, par son téléphone.</summary>
+    private async Task<Client?> ClientExistantAsync(Demande demande, CancellationToken ct)
+    {
+        var email = demande.Email.ToLowerInvariant();
+        return await db.Clients.FirstOrDefaultAsync(c => c.Email == email, ct)
+            ?? await db.Clients.FirstOrDefaultAsync(c => c.Telephone == demande.Telephone, ct);
+    }
+
+    private async Task<string> NumeroClientSuivantAsync(CancellationToken ct)
+    {
+        const string prefixe = "CLI-";
+        var dernier = await db.Clients
+            .OrderByDescending(c => c.Numero.Length)
+            .ThenByDescending(c => c.Numero)
+            .Select(c => c.Numero)
+            .FirstOrDefaultAsync(ct);
+
+        var rang = dernier is null ? 1 : int.Parse(dernier[prefixe.Length..]) + 1;
+        return $"{prefixe}{rang:00000}";
     }
 
     /// <summary>Anti-fraude : code inconnu ignoré, auto-parrainage refusé, un seul parrain par client.</summary>
