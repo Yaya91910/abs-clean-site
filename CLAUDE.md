@@ -187,7 +187,7 @@ Anti-abus : champ piège invisible (*honeypot*) + limitation de débit par IP su
 - Les conditions complètes doivent figurer sur une page « Conditions du parrainage », liée depuis la section.
 
 **Fonctionnement technique :**
-- À chaque demande enregistrée, générer un **code unique** lisible : `ABS-` + prénom en majuscules sans accents (6 lettres max) + 1 à 2 caractères aléatoires, sans caractères ambigus (0/O, 1/I). Garantir l'unicité en base.
+- À chaque demande enregistrée, générer un **code unique** lisible : `ABS-` + 7 chiffres aléatoires, le premier non nul (ex. `ABS-1765321`). Garantir l'unicité en base. À la saisie, « 1765321 » ou « ABS1765321 » sont complétés en `ABS-1765321` ; les anciens codes (ex. `ABS-MARIE7`) restent valables.
 - Lien de partage : `https://{domaine}/devis?parrain={CODE}`. À l'ouverture, le champ « Code de parrainage » est prérempli.
 - **QR code** généré côté serveur (bibliothèque QRCoder en .NET), en SVG, niveau de correction M, intégré : à l'écran de succès, dans le **PDF du devis** et dans l'e-mail au client.
 - Partage : copier le lien (Clipboard API), WhatsApp (`https://wa.me/?text=`), SMS (`sms:?&body=`), e-mail (`mailto:`), et `navigator.share` sur mobile si disponible.
@@ -348,7 +348,7 @@ Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le 
 | #21, #22 | Cette section d'état, bilan de santé hebdomadaire (`docs/BILAN-HEBDO.md`) |
 | #23 | Fiche client : numéro `CLI-00001` sans doublon, deux PDF distincts (devis client / fiche d'intervention gérant), bandeau « Client existant », accueil « Bon retour » sur le site |
 
-Tests : API 129 (xUnit), site 20 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+Tests : API 128 (xUnit), site 22 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
 
 ### Reste à faire
 
@@ -364,6 +364,7 @@ Tests : API 129 (xUnit), site 20 (Vitest), Playwright 23 (dont accessibilité ax
 
 - **Le calcul fait foi côté serveur** ; le front n'envoie que des quantités.
 - **Client** (`Client`, numéro `CLI-00001`) : reconnu par son e-mail (casse ignorée) **ou** son téléphone pour éviter les doublons ; mais l'accueil « Bon retour » et les coordonnées directes d'ABS clean ne sont donnés au navigateur que si e-mail **et** téléphone correspondent (sinon on révélerait si une adresse est cliente).
+- **Code parrain `ABS-` + 7 chiffres** (ex. `ABS-1765321`, demandé par le gérant) : aucune donnée personnelle dans le code ; les anciens codes `ABS-PRENOM7` restent valables.
 - **Deux exemplaires PDF** (`DevisPdf.DocumentClient` / `DocumentGerant`, données dans `FicheDevis`) ; les coordonnées d'ABS clean n'y apparaissent que si elles sont renseignées.
 - **Une seule image Docker** : l'API sert le site (même domaine, pas de CORS). `PageIndex` remplace `__SITE_URL__` par `Site__Url` et pose la CSP, avec l'empreinte SHA-256 du script intégré par Angular calculée au démarrage.
 - **Envois en arrière-plan** (`FileEnvois` + `EnvoisEnArrierePlan`), indépendants les uns des autres ; `Envois__EnArrierePlan=false` dans les tests.

@@ -56,7 +56,7 @@ import { DevisModal } from './devis-modal';
 
           <div class="champ">
             <label for="code-parrain" class="field-label">Code de parrainage <span class="facultatif">(facultatif)</span></label>
-            <input id="code-parrain" class="field code" type="text" placeholder="ex. ABS-MARIE7" autocomplete="off" aria-describedby="code-parrain-aide"
+            <input id="code-parrain" class="field code" type="text" placeholder="ex. ABS-1765321" autocomplete="off" aria-describedby="code-parrain-aide"
               [value]="store.codeParrain()" (change)="store.definirCodeParrain($any($event.target).value)" />
             <span id="code-parrain-aide" class="aide">Un proche vous a recommandé ? Saisissez son code : il sera remercié.</span>
             @switch (store.codeReconnu()) {

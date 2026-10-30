@@ -15,7 +15,7 @@ import { PageLegale } from './page-legale';
 
       <h2>Le principe</h2>
       <p>
-        Chaque client reçoit, après sa demande de devis, un <strong>code de parrainage personnel</strong> (par exemple ABS-MARIE7),
+        Chaque client reçoit, après sa demande de devis, un <strong>code de parrainage personnel</strong> (par exemple ABS-1765321),
         avec un lien et un QR code à partager.
       </p>
 

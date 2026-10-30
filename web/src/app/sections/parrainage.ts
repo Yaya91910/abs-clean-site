@@ -52,7 +52,7 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@a
           <div class="ref-card">
             <div class="ref-card-glow" aria-hidden="true"></div>
             <span class="ref-card-label">Votre code personnel</span>
-            <span class="ref-code">ABS-MARIE7</span>
+            <span class="ref-code">ABS-1765321</span>
             <div class="qr-box"><img src="qr-exemple.svg" alt="QR code de parrainage (exemple)" width="160" height="160" loading="lazy" /></div>
             <span class="ref-card-hint">Scannez pour obtenir un devis</span>
             <span class="ref-card-note">Exemple — chaque client reçoit son propre code après sa demande.</span>

@@ -60,7 +60,14 @@ describe('DevisStore', () => {
   });
 
   it('normalise le code de parrainage en majuscules', () => {
-    store.definirCodeParrain('  abs-marie7 ');
-    expect(store.codeParrain()).toBe('ABS-MARIE7');
+    store.definirCodeParrain('  abs-176 5321 ');
+    expect(store.codeParrain()).toBe('ABS-1765321');
+  });
+
+  it('ajoute le préfixe ABS- à un code saisi en chiffres seuls', () => {
+    store.definirCodeParrain('1765321');
+    expect(store.codeParrain()).toBe('ABS-1765321');
+    store.definirCodeParrain('abs1765321');
+    expect(store.codeParrain()).toBe('ABS-1765321');
   });
 });

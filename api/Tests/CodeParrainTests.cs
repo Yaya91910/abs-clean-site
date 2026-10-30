@@ -4,31 +4,20 @@ namespace AbsClean.Api.Tests;
 
 public class CodeParrainTests
 {
-    [Theory]
-    [InlineData("Marie", "ABS-MARIE")]
-    [InlineData("Élodie", "ABS-ELODIE")]
-    [InlineData("Zoé", "ABS-ZOE")]
-    [InlineData("Jean-François", "ABS-JEANFR")]
-    [InlineData("  ", "ABS-CLIENT")]
-    public void Racine_prenom_en_majuscules_sans_accents_6_lettres_max(string prenom, string attendu)
-    {
-        Assert.Equal(attendu, CodeParrain.Racine(prenom));
-    }
-
     [Fact]
-    public void Caracteres_aleatoires_sans_ambiguite()
+    public void Code_ABS_et_7_chiffres_sans_zero_en_tete()
     {
         for (var i = 0; i < 500; i++)
-        {
-            var code = CodeParrain.Generer("Marie", 2);
-            Assert.Matches("^ABS-MARIE[A-Z2-9]{2}$", code);
-            Assert.DoesNotContain(code[9..], c => c is '0' or 'O' or '1' or 'I');
-        }
+            Assert.Matches("^ABS-[1-9][0-9]{6}$", CodeParrain.Generer());
     }
 
     [Theory]
-    [InlineData(" abs-marie7 ", "ABS-MARIE7")]
-    [InlineData("ABS - MARIE7", "ABS-MARIE7")]
+    [InlineData(" abs-1765321 ", "ABS-1765321")]
+    [InlineData("ABS - 176 5321", "ABS-1765321")]
+    [InlineData("1765321", "ABS-1765321")]
+    [InlineData("abs1765321", "ABS-1765321")]
+    [InlineData("abs-marie7", "ABS-MARIE7")]
+    [InlineData("176532", "176532")]
     [InlineData("", null)]
     [InlineData(null, null)]
     public void Code_saisi_normalise(string? saisi, string? attendu)
