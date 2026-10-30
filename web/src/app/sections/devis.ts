@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, DOCUMENT, ElementRef, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { CodeQuantite, DevisStore, FREQUENCES, PROFILS } from '../core/devis-store';
 import { Fleche } from '../shared/fleche';
+import { Montant } from '../shared/montant';
 import { DevisModal } from './devis-modal';
 
 @Component({
   selector: 'abs-devis',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Fleche, DevisModal],
+  imports: [Fleche, Montant, DevisModal],
   template: `
     <section id="devis" class="section">
       <div class="container">
@@ -73,9 +74,10 @@ import { DevisModal } from './devis-modal';
 
           <!-- Récapitulatif : collé à droite sur ordinateur, l'estimation reste sous les yeux pendant les choix. -->
           <div class="resume">
-            <div class="estimate" aria-live="polite">
+            <div class="estimate" aria-live="polite" #estimation>
               <span class="estimate-titre">Votre estimation</span>
-              <span class="estimate-val">{{ store.libelleEstimation() }}</span>
+              <span class="estimate-val"><abs-montant [valeur]="store.estimation()" /></span>
+              <span class="visually-hidden">{{ store.libelleEstimation() }}</span>
               <span class="aide">
                 {{ store.libelleProfil() }} · {{ store.libelleFrequence() }} — tarif de base, réduction selon la formule. Estimation confirmée après échange.
               </span>
@@ -90,6 +92,9 @@ import { DevisModal } from './devis-modal';
             @if (afficherAide()) {
               <span class="alerte" role="alert">Ajoutez au moins une vitre, baie ou velux pour valider.</span>
             }
+            @if (store.repris()) {
+              <p class="aide repris">Vos choix de la dernière visite ont été gardés. <button type="button" class="lien" (click)="store.reinitialiser()">Tout remettre à zéro</button></p>
+            }
             <ul class="rassurance">
               <li>Devis gratuit</li>
               <li>Sans engagement</li>
@@ -97,6 +102,11 @@ import { DevisModal } from './devis-modal';
             </ul>
           </div>
         </div>
+      </div>
+      <!-- Téléphone : le récapitulatif est sous les compteurs ; cette barre garde l'estimation sous le pouce. -->
+      <div class="barre" role="region" aria-label="Estimation en cours" [hidden]="!barreVisible()">
+        <span class="barre-montant"><abs-montant [valeur]="store.estimation()" /></span>
+        <button type="button" class="barre-btn" (click)="valider()">Continuer<abs-fleche [taille]="18" couleur="#FFFFFF" /></button>
       </div>
       <abs-devis-modal />
     </section>
@@ -139,6 +149,19 @@ import { DevisModal } from './devis-modal';
     .estimate-val { font-size: clamp(24px, 7vw, 40px); font-weight: 800; color: var(--accent); letter-spacing: -0.02em; white-space: nowrap; }
 
     .valider { width: 100%; max-width: 380px; justify-content: space-between; }
+    .repris { text-align: center; margin: 0; }
+    .lien { border: none; background: none; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+
+    .barre {
+      position: fixed; z-index: 40; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 8px 8px 8px 18px; border-radius: 999px; background: rgba(255, 255, 255, 0.92); border: 1px solid var(--trait);
+      box-shadow: 0 18px 40px -18px rgba(21, 52, 95, 0.45); animation: barre-entree .3s ease;
+    }
+    .barre[hidden] { display: none; }
+    .barre-montant { font-weight: 800; font-size: 17px; color: var(--accent); white-space: nowrap; }
+    .barre-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 20px; border: none; border-radius: 999px; font: inherit; font-weight: 700; color: #FFFFFF; background: var(--accent); cursor: pointer; }
+    @keyframes barre-entree { from { transform: translateY(120%); } }
+    @media (min-width: 900px) { .barre { display: none; } }
     .alerte { font-size: 13px; color: var(--danger); font-weight: 500; }
   `,
 })
@@ -155,6 +178,30 @@ export class Devis {
   ];
 
   protected readonly afficherAide = signal(false);
+
+  private readonly estimation = viewChild.required<ElementRef<HTMLElement>>('estimation');
+  private readonly sectionVisible = signal(false);
+  private readonly resumeVisible = signal(true);
+  /** Barre du bas (téléphone) : dans la section devis, éléments choisis, estimation hors de l'écran. */
+  protected readonly barreVisible = computed(() => this.sectionVisible() && !this.resumeVisible() && this.store.nbElements() > 0);
+
+  constructor() {
+    const hote = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const fenetre = inject(DOCUMENT).defaultView;
+    const destruction = inject(DestroyRef);
+    afterNextRender(() => {
+      if (!fenetre || !('IntersectionObserver' in fenetre)) return;
+      const section = new IntersectionObserver(([entree]) => this.sectionVisible.set(entree.isIntersecting));
+      // L'estimation compte comme visible quand on en voit au moins la moitié (pas un simple liseré en bas d'écran).
+      const estimation = new IntersectionObserver(([entree]) => this.resumeVisible.set(entree.isIntersecting), { threshold: 0.5 });
+      section.observe(hote.querySelector('section')!);
+      estimation.observe(this.estimation().nativeElement);
+      destruction.onDestroy(() => {
+        section.disconnect();
+        estimation.disconnect();
+      });
+    });
+  }
 
   protected ajuster(code: CodeQuantite, delta: number): void {
     this.store.ajuster(code, delta);

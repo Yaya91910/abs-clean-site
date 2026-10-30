@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Buee } from '../shared/buee';
 import { Fleche } from '../shared/fleche';
 
 @Component({
   selector: 'abs-hero',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Fleche],
+  imports: [Fleche, Buee],
   template: `
     <section class="section hero">
       <div class="hero-grid">
@@ -33,6 +34,7 @@ import { Fleche } from '../shared/fleche';
           <div class="hero-visual">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#9BB3CC" stroke-width="1.4" /><circle cx="8.5" cy="10" r="1.4" stroke="#9BB3CC" stroke-width="1.4" /><path d="M21 15l-5-4-4 3-3-2-6 5" stroke="#9BB3CC" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
             <span>[Photo : intervention ABS clean]</span>
+            <abs-buee />
           </div>
           <div class="flottant haut" aria-hidden="true"><span class="live-dot"></span>Estimation en direct</div>
           <div class="flottant bas" aria-hidden="true">Jusqu'à <strong>2,50 m</strong> de hauteur</div>
@@ -76,8 +78,8 @@ import { Fleche } from '../shared/fleche';
     @media (max-width: 719px) { .flottant { animation: none; } }
     @media (max-width: 520px) { .flottant.haut { left: 18px; } .flottant.bas { right: 18px; } }
     .hero-visual {
-      width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; background: linear-gradient(135deg, var(--brume), #F7FAFD);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 13px; color: var(--text-muted);
+      position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; background: linear-gradient(165deg, #DCEBFA 0%, #B5D2F0 55%, #8DB7E6 100%); /* « ciel » derrière la vitre, en attendant la photo */
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 13px; color: var(--ink);
     }
 
     .trustrow { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }

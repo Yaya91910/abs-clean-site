@@ -45,12 +45,38 @@ describe('Tarifs', () => {
     expect(texte).toMatch(/à partir de\s*40\s*€/);
   });
 
-  it('signale une erreur si l’API ne répond pas', async () => {
-    const fixture = TestBed.createComponent(Tarifs);
-    fixture.detectChanges();
-    http.expectOne('/api/tarifs').flush(null, { status: 503, statusText: 'Indisponible' });
-    await fixture.whenStable();
+  it('réessaie, puis signale une erreur si l’API ne répond toujours pas', async () => {
+    vi.useFakeTimers();
+    try {
+      const fixture = TestBed.createComponent(Tarifs);
+      fixture.detectChanges();
+      // Premier appel + 3 nouvelles tentatives espacées.
+      for (let appel = 0; appel < 4; appel++) {
+        http.expectOne('/api/tarifs').flush(null, { status: 503, statusText: 'Indisponible' });
+        await vi.advanceTimersByTimeAsync(5000);
+      }
+      fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')).not.toBeNull();
+      expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('affiche les prix si une nouvelle tentative réussit', async () => {
+    vi.useFakeTimers();
+    try {
+      const fixture = TestBed.createComponent(Tarifs);
+      fixture.detectChanges();
+      http.expectOne('/api/tarifs').flush(null, { status: 0, statusText: 'Réseau coupé' });
+      await vi.advanceTimersByTimeAsync(1500);
+      http.expectOne('/api/tarifs').flush(GRILLE);
+      fixture.detectChanges();
+
+      expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')).toBeNull();
+      expect((fixture.nativeElement as HTMLElement).textContent).toMatch(/l'unité\s*20\s*€/);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

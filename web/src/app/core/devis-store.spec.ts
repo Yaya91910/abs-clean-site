@@ -27,6 +27,7 @@ describe('DevisStore', () => {
   let store: DevisStore;
 
   beforeEach(() => {
+    localStorage.clear();
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     store = TestBed.inject(DevisStore);
     TestBed.inject(HttpTestingController).expectOne('/api/tarifs').flush(GRILLE);
@@ -69,5 +70,47 @@ describe('DevisStore', () => {
     expect(store.codeParrain()).toBe('ABS-1765321');
     store.definirCodeParrain('abs1765321');
     expect(store.codeParrain()).toBe('ABS-1765321');
+  });
+
+  describe('mémoire des choix', () => {
+    /** Nouveau store, comme à la visite suivante (même navigateur). */
+    function nouvelleVisite(): DevisStore {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+      return TestBed.inject(DevisStore);
+    }
+
+    it('reprend profil, fréquence et quantités à la visite suivante', () => {
+      store.profil.set('professionnel');
+      store.frequence.set('trimestriel');
+      store.ajuster('baie', 2);
+      TestBed.tick();
+
+      const suivante = nouvelleVisite();
+      expect(suivante.profil()).toBe('professionnel');
+      expect(suivante.frequence()).toBe('trimestriel');
+      expect(suivante.quantites()).toEqual({ vitre: 0, baie: 2, velux: 0 });
+      expect(suivante.repris()).toBe(true);
+    });
+
+    it('ignore des données invalides ou modifiées à la main', () => {
+      for (const contenu of ['pas du json', '{"profil":"pirate","frequence":"ponctuel","quantites":{"vitre":1,"baie":0,"velux":0}}', '{"profil":"particulier","frequence":"ponctuel","quantites":{"vitre":500,"baie":0,"velux":0}}']) {
+        localStorage.setItem('abs-clean.devis', contenu);
+        const suivante = nouvelleVisite();
+        expect(suivante.quantites()).toEqual({ vitre: 0, baie: 0, velux: 0 });
+        expect(suivante.repris()).toBe(false);
+      }
+    });
+
+    it('remet tout à zéro', () => {
+      store.frequence.set('mensuel');
+      store.ajuster('velux', 3);
+      store.reinitialiser();
+      TestBed.tick();
+
+      expect(store.quantites()).toEqual({ vitre: 0, baie: 0, velux: 0 });
+      expect(store.frequence()).toBe('ponctuel');
+      expect(nouvelleVisite().repris()).toBe(false);
+    });
   });
 });
