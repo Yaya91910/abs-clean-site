@@ -27,10 +27,10 @@ public class DevisPdfTests
             Adresse = "12 rue des Lilas", CodePostal = "91000", Ville = "Évry-Courcouronnes", Acces = "3e étage, code 1234B",
             Creneaux = [Creneau.SemaineMatin, Creneau.Samedi],
             Commentaire = "Grandes baies côté jardin, accès par le portillon. Chien à la maison (gentil).",
-            CodeParrainPersonnel = "ABS-LEA7", CodeParrainUtilise = "ABS-SOPHIE7",
+            CodeParrainPersonnel = "ABS-1765321", CodeParrainUtilise = "ABS-4820596",
         };
         return new FicheDevis(demande, RangDemande: 3, DemandePrecedenteLe: new DateTime(2026, 6, 20, 14, 0, 0, DateTimeKind.Utc),
-            QrParrainage: ServiceParrainage.QrSvgDe("https://abs-clean.example/devis?parrain=ABS-LEA7"),
+            QrParrainage: ServiceParrainage.QrSvgDe("https://abs-clean.example/devis?parrain=ABS-1765321"),
             QrValidation: ServiceParrainage.QrSvgDe("https://abs-clean.example/admin/intervention#demande=128&jeton=exemple"));
     }
 

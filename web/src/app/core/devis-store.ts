@@ -70,7 +70,8 @@ export class DevisStore {
   }
 
   definirCodeParrain(code: string): void {
-    const normalise = code.replace(/\s/g, '').toUpperCase();
+    // Même règle que l'API (CodeParrain.Normaliser) : « 1765321 » ou « ABS1765321 » → « ABS-1765321 ».
+    const normalise = code.replace(/\s/g, '').toUpperCase().replace(/^(?:ABS)?(\d{7})$/, 'ABS-$1');
     this.codeParrain.set(normalise);
     this.codeReconnu.set(null);
     if (!normalise) return;

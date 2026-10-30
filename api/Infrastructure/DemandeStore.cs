@@ -75,7 +75,7 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
                 demande.Client.Numero = await NumeroClientSuivantAsync(ct);
             // Année française : un devis du 1er janvier à 0 h 30 porte bien le numéro de la nouvelle année.
             demande.Numero = await NumeroSuivantAsync(HeureParis.Depuis(maintenant).Year, ct);
-            demande.CodeParrainPersonnel = await CodeLibreAsync(demande.Prenom, ct);
+            demande.CodeParrainPersonnel = await CodeLibreAsync(ct);
             db.Demandes.Add(demande);
             var parrainage = parrain is null ? null : new Parrainage { ParrainId = parrain.Id, Filleul = demande, CreeLe = maintenant };
             if (parrainage is not null) db.Parrainages.Add(parrainage);
@@ -145,19 +145,15 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
         return (CodeParrainSaisi.Applique, parrain);
     }
 
-    /// <summary>1 caractère aléatoire si possible, 2 sinon (3 en dernier recours, journalisé).</summary>
-    private async Task<string> CodeLibreAsync(string prenom, CancellationToken ct)
+    /// <summary>Tire des codes jusqu'à en trouver un libre (9 millions possibles : une collision est rarissime).</summary>
+    private async Task<string> CodeLibreAsync(CancellationToken ct)
     {
-        foreach (var (nb, essais) in new[] { (1, 8), (2, 30) })
+        for (var i = 0; i < 20; i++)
         {
-            for (var i = 0; i < essais; i++)
-            {
-                var code = CodeParrain.Generer(prenom, nb);
-                if (!await db.Demandes.AnyAsync(x => x.CodeParrainPersonnel == code, ct)) return code;
-            }
+            var code = CodeParrain.Generer();
+            if (!await db.Demandes.AnyAsync(x => x.CodeParrainPersonnel == code, ct)) return code;
         }
-        log.LogWarning("Codes à 1 et 2 caractères épuisés pour la racine {Racine} : code à 3 caractères.", CodeParrain.Racine(prenom));
-        return CodeParrain.Generer(prenom, 3);
+        throw new InvalidOperationException("Aucun code de parrainage libre après 20 tirages.");
     }
 
     private async Task<string> NumeroSuivantAsync(int annee, CancellationToken ct)
