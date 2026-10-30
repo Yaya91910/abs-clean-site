@@ -345,8 +345,10 @@ Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le 
 | #10 | Envois en arrière-plan + reprise au démarrage, alerte mode test, 4 bugs corrigés, refactoring |
 | #11 | Sécurité : CSP et en-têtes, limite 64 Ko, caractères de contrôle, jeton du gérant après `#`, Dependabot |
 | #15, #18, #19, #20 | Mises à jour Dependabot triées, règles d'exclusion, coverlet retiré |
+| #21, #22 | Cette section d'état, bilan de santé hebdomadaire (`docs/BILAN-HEBDO.md`) |
+| #23 | Fiche client : numéro `CLI-00001` sans doublon, deux PDF distincts (devis client / fiche d'intervention gérant), bandeau « Client existant », accueil « Bon retour » sur le site |
 
-Tests : API 122 (xUnit), site 20 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+Tests : API 129 (xUnit), site 20 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
 
 ### Reste à faire
 
@@ -354,11 +356,15 @@ Tests : API 122 (xUnit), site 20 (Vitest), Playwright 23 (dont accessibilité ax
 2. **Préproduction** : compte Render + Blueprint (`docs/DEPLOIEMENT.md`). Puis vérifier en ligne : vraie IP derrière Render (`X-Forwarded-For`, sinon la limite par IP s'applique à tous), vrais e-mails et SMS (Brevo), aperçu de partage, iPhone (Safari) et Android.
 3. **Production** : offres payantes (base avec sauvegardes) et nom de domaine, avec l'accord du gérant ; secret `RENDER_DEPLOY_HOOK_PRODUCTION`, environnement GitHub `production` avec relecteur.
 4. **Comptes** : liste de `docs/SECURITE.md` (2FA partout, branche `main` protégée).
-5. Pistes non demandées : écran d'administration (liste des demandes, remise utilisée `RemiseUtiliseeLe`), purge des anciennes demandes, tiret « — » du SMS (2 SMS facturés en Unicode, « - » tiendrait en 1).
+5. **Base locale** `abs_clean_dev` : migration `Clients` (#23) pas encore appliquée (sandbox) — `dotnet ef database update --project api`.
+6. Piste à décider : **code parrain par client** plutôt que par demande (aujourd'hui un client fidèle reçoit un nouveau code à chaque devis).
+7. Pistes non demandées : écran d'administration (liste des demandes, remise utilisée `RemiseUtiliseeLe`), purge des anciennes demandes, tiret « — » du SMS (2 SMS facturés en Unicode, « - » tiendrait en 1).
 
 ### Choix importants (ne pas défaire sans raison)
 
 - **Le calcul fait foi côté serveur** ; le front n'envoie que des quantités.
+- **Client** (`Client`, numéro `CLI-00001`) : reconnu par son e-mail (casse ignorée) **ou** son téléphone pour éviter les doublons ; mais l'accueil « Bon retour » et les coordonnées directes d'ABS clean ne sont donnés au navigateur que si e-mail **et** téléphone correspondent (sinon on révélerait si une adresse est cliente).
+- **Deux exemplaires PDF** (`DevisPdf.DocumentClient` / `DocumentGerant`, données dans `FicheDevis`) ; les coordonnées d'ABS clean n'y apparaissent que si elles sont renseignées.
 - **Une seule image Docker** : l'API sert le site (même domaine, pas de CORS). `PageIndex` remplace `__SITE_URL__` par `Site__Url` et pose la CSP, avec l'empreinte SHA-256 du script intégré par Angular calculée au démarrage.
 - **Envois en arrière-plan** (`FileEnvois` + `EnvoisEnArrierePlan`), indépendants les uns des autres ; `Envois__EnArrierePlan=false` dans les tests.
 - **Mode test des envois** sans clé Brevo : tout est écrit dans `api/boite-envoi/` (ignoré par Git).
@@ -388,3 +394,5 @@ Site sur http://localhost:4200 (API sur 5188 via le proxy). Tests : `dotnet test
 - La CSP n'existe que sur la version servie par l'API (pas sur `ng serve`) : la vérifier sur une version de production (API publiée + site dans `wwwroot`).
 - Avant de fusionner une PR : les **4 jobs** de la CI au vert (API, Web, Image Docker, Playwright) ; pour une mise à jour d'outil de test, vérifier dans les journaux que les 122 tests ont bien tourné.
 - `api/appsettings.Development.json` contient une adresse et un numéro de gérant **fictifs** pour le mode test : ne jamais y mettre de vraies valeurs.
+- `dotnet ef` utilise `AbsCleanDbConception` (fabrique de conception) : il ne démarre pas l'API ; la variable `ConnectionStrings__Default` prime pour appliquer une migration.
+- **Sandbox strict** (ports locaux, PostgreSQL, certificats et réseau bloqués) : compiler avec `dotnet build -m:1 -nodeReuse:false -p:UseSharedCompilation=false` ; `dotnet test`, `ng build`, `gh` et la base locale ne marchent pas → laisser la CI tester, ouvrir la PR depuis le lien GitHub, fusionner avec Git (`git merge --no-ff` puis `git push origin main`) une fois les 4 jobs verts. Aperçu des PDF : petit programme hors dépôt appelant `DevisPdf` (images via `GenerateImages`), paquets restaurés avec `--source ~/.nuget/packages`.
