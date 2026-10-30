@@ -43,7 +43,7 @@ import { Fleche } from '../shared/fleche';
     .faq-list { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 12px; }
     .faq-item { border-radius: 20px; overflow: hidden; transition: box-shadow .2s ease; text-align: left; }
     .faq-item:hover { box-shadow: 0 26px 52px -30px rgba(21, 52, 95, 0.38); }
-    .faq-item.ouvert { box-shadow: 0 0 0 2px rgba(47, 111, 214, 0.35), 0 26px 52px -30px rgba(21, 52, 95, 0.4); }
+    .faq-item.ouvert { box-shadow: 0 0 0 2px rgba(61, 108, 181, 0.35), 0 26px 52px -30px rgba(21, 52, 95, 0.4); }
     h3 { font-size: inherit; letter-spacing: normal; }
     .faq-q { width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px 18px 18px 20px; background: transparent; border: none; cursor: pointer; font-family: inherit; text-align: left; color: var(--ink); }
     .faq-num { width: 34px; height: 34px; border-radius: 11px; background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #FFFFFF; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

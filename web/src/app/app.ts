@@ -47,16 +47,17 @@ import { ConditionsParrainage } from './pages/conditions-parrainage';
           <div class="content">
             <abs-header />
             <main>
+              <!-- Ordre pensé pour la conversion : promesse → 3 étapes → offre → prix → devis, puis réassurance. -->
               <abs-hero />
-              <abs-a-propos />
-              <abs-avant-apres />
+              <abs-processus />
               <abs-prestations />
               <abs-tarifs />
-              <abs-processus />
-              <abs-faq />
               <abs-devis />
-              <abs-cta />
+              <abs-avant-apres />
+              <abs-a-propos />
+              <abs-faq />
               <abs-parrainage />
+              <abs-cta />
               <abs-reseaux />
             </main>
             <abs-footer />

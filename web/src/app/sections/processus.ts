@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     <section class="section">
       <div class="container">
         <div class="head">
-          <span class="kicker">Processus</span>
+          <span class="kicker">Simple et rapide</span>
           <h2 class="title">Comment ça marche</h2>
         </div>
         <ol class="grid-3">

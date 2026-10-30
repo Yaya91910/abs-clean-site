@@ -43,8 +43,8 @@ const RESEAUX = {
     @media (max-width: 560px) { .social-row { grid-template-columns: 1fr; } }
     .social-card { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 14px 14px 14px 16px; border-radius: 22px; color: #FFFFFF; text-align: left; transition: transform .2s ease, box-shadow .2s ease; }
     .social-card:hover { transform: translateY(-4px); }
-    .social-card.tiktok { background: linear-gradient(135deg, var(--ink) 0%, #183A6A 55%, #3D86D8 100%); box-shadow: 0 18px 34px -16px rgba(21, 52, 95, 0.6); }
-    .social-card.insta { background: linear-gradient(135deg, var(--accent2) -10%, var(--accent) 50%, #1F55B5 100%); box-shadow: 0 18px 34px -16px var(--accent-shadow); }
+    .social-card.tiktok { background: linear-gradient(135deg, var(--ink) 0%, #2A4F82 100%); box-shadow: 0 14px 28px -16px rgba(21, 52, 95, 0.4); }
+    .social-card.insta { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-fonce) 100%); box-shadow: 0 14px 28px -16px var(--accent-shadow); }
     .social-card::after { content: ""; position: absolute; top: -40%; right: -10%; width: 140px; height: 140px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); pointer-events: none; }
     .social-ico { width: 52px; height: 52px; border-radius: 16px; background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .social-txt { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
