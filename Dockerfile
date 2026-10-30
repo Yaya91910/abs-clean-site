@@ -6,7 +6,7 @@ WORKDIR /src/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web/ ./
-RUN npx ng build
+RUN npx ng build && node scripts/precompresser.mjs dist/web/browser
 
 # 2. API .NET
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api

@@ -40,6 +40,8 @@ public class SecuriteTests(SiteAvecScriptFactory factory) : IClassFixture<SiteAv
         Assert.Contains($"script-src 'self' 'sha256-{empreinte}'", csp);
         Assert.Contains("frame-ancestors 'none'", csp);
         Assert.Contains("object-src 'none'", csp);
+        Assert.Contains("frame-src 'none'", csp);
+        Assert.Contains("worker-src 'none'", csp);
         Assert.DoesNotContain("unsafe-eval", csp);
     }
 
@@ -62,6 +64,8 @@ public class SecuriteTests(SiteAvecScriptFactory factory) : IClassFixture<SiteAv
         Assert.Equal("nosniff", reponse.Headers.GetValues("X-Content-Type-Options").Single());
         Assert.Equal("DENY", reponse.Headers.GetValues("X-Frame-Options").Single());
         Assert.Equal("strict-origin-when-cross-origin", reponse.Headers.GetValues("Referrer-Policy").Single());
+        Assert.Contains("browsing-topics=()", reponse.Headers.GetValues("Permissions-Policy").Single());
+        Assert.Equal("none", reponse.Headers.GetValues("X-Permitted-Cross-Domain-Policies").Single());
         Assert.False(reponse.Headers.Contains("Server"));
     }
 

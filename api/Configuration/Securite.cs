@@ -40,8 +40,10 @@ public static class Securite
             entetes.XContentTypeOptions = "nosniff";
             entetes.XFrameOptions = "DENY";
             entetes["Referrer-Policy"] = "strict-origin-when-cross-origin";
-            entetes["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
+            // Aucune fonction sensible du navigateur n'est utile au site : toutes refusées, y compris aux contenus intégrés.
+            entetes["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), display-capture=(), browsing-topics=()";
             entetes["Cross-Origin-Opener-Policy"] = "same-origin";
+            entetes["X-Permitted-Cross-Domain-Policies"] = "none";
             return suite(http);
         });
         return app;

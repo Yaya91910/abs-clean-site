@@ -44,6 +44,7 @@ public static partial class Pipeline
             app.UseHsts();
 
         app.UseResponseCompression();
+        app.UtiliserFichiersPrecompresses(app.Environment);
 
         // Fichiers du site (wwwroot, présent dans l'image Docker). Ceux dont le nom porte une empreinte
         // (main-YZCV272D.js) changent de nom à chaque version : en cache un an. Les autres (favicon, image
@@ -51,9 +52,14 @@ public static partial class Pipeline
         // index.html est servi à part (PageIndex), jamais mis en cache.
         app.UseStaticFiles(new StaticFileOptions
         {
-            OnPrepareResponse = c => c.Context.Response.Headers.CacheControl = FichierVersionne().IsMatch(c.File.Name)
-                ? "public, max-age=31536000, immutable"
-                : "public, max-age=86400",
+            ContentTypeProvider = FichiersPrecompresses.TypesDeContenu(),
+            OnPrepareResponse = c =>
+            {
+                FichiersPrecompresses.Preparer(c);
+                c.Context.Response.Headers.CacheControl = FichierVersionne().IsMatch(c.File.Name)
+                    ? "public, max-age=31536000, immutable"
+                    : "public, max-age=86400";
+            },
         });
         // Routage explicitement après les fichiers statiques : sinon la route de repli (index.html)
         // est choisie avant eux et le site ne reçoit jamais ses scripts ni ses images.
@@ -74,6 +80,7 @@ public static partial class Pipeline
         app.MapDevisEndpoints();
         app.MapDemandeEndpoints();
         app.MapParrainageEndpoints();
+        app.MapReferencementEndpoints();
 
         var page = app.Services.GetRequiredService<PageIndex>();
         // GET et HEAD : certains services de surveillance testent la disponibilité par une requête HEAD.
@@ -82,7 +89,7 @@ public static partial class Pipeline
         return app;
     }
 
-    /// <summary>Nom avec l'empreinte ajoutée par la compilation Angular (outputHashing) : main-YZCV272D.js, inter-latin-wght-normal-NRMW37G5.woff2.</summary>
-    [GeneratedRegex(@"-[A-Z0-9]{8}\.[a-z0-9]+$")]
+    /// <summary>Nom avec l'empreinte ajoutée par la compilation Angular (outputHashing) : main-YZCV272D.js (et sa version précompressée .br ou .gz), inter-latin-wght-normal-NRMW37G5.woff2.</summary>
+    [GeneratedRegex(@"-[A-Z0-9]{8}\.[a-z0-9]+(\.br|\.gz)?$")]
     private static partial Regex FichierVersionne();
 }

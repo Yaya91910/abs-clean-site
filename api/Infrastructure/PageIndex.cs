@@ -27,6 +27,9 @@ public sealed partial class PageIndex(IWebHostEnvironment env, IOptions<SiteOpti
         if (_page.Value is not var (html, csp)) return Results.NotFound();
         http.Response.Headers.CacheControl = "no-cache";
         http.Response.Headers.ContentSecurityPolicy = csp;
+        // Page du gérant (lien de son e-mail) : jamais dans les moteurs de recherche.
+        if (http.Request.Path.StartsWithSegments("/admin"))
+            http.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
         return Results.Content(html, "text/html; charset=utf-8");
     }
 
@@ -42,6 +45,9 @@ public sealed partial class PageIndex(IWebHostEnvironment env, IOptions<SiteOpti
             "img-src 'self' data:",
             "font-src 'self'",
             "connect-src 'self'",
+            // Ni cadres intégrés ni workers : le site n'en utilise pas.
+            "frame-src 'none'",
+            "worker-src 'none'",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
