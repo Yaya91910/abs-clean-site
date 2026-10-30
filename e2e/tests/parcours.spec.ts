@@ -52,7 +52,7 @@ for (const largeur of [1440, 820, 390, 340]) {
       // Écran de succès avec le code parrain et son QR code.
       await expect(fenetre.getByRole('heading', { name: 'Demande envoyée !' })).toBeVisible();
       await expect(fenetre.getByText('Votre devis en PDF vient de partir dans votre boîte mail.')).toBeVisible();
-      await expect(fenetre.locator('.ref-code')).toHaveText(/^ABS-LEA[A-Z2-9]{1,3}$/);
+      await expect(fenetre.locator('.ref-code')).toHaveText(/^ABS-[1-9][0-9]{6}$/);
       const qr = fenetre.getByAltText('QR code de votre lien de parrainage');
       await expect(qr).toBeVisible();
       await expect.poll(() => qr.evaluate((img: HTMLImageElement) => img.naturalWidth), { message: 'QR code chargé' }).toBeGreaterThan(0);

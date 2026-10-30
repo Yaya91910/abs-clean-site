@@ -46,7 +46,7 @@ public class ParrainageTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         var reponse = await EnvoyerAsync(Client("Léa"));
 
-        Assert.Matches("^ABS-LEA[A-Z2-9]{1,2}$", Code(reponse));
+        Assert.Matches("^ABS-[1-9][0-9]{6}$", Code(reponse));
         Assert.Equal($"https://abs-clean.test/devis?parrain={Code(reponse)}", reponse.GetProperty("lienParrainage").GetString());
         Assert.Null(Saisi(reponse));
     }
@@ -58,7 +58,7 @@ public class ParrainageTests(ApiFactory factory) : IClassFixture<ApiFactory>
         for (var i = 0; i < 45; i++) codes.Add(Code(await EnvoyerAsync(Client("Marie"))));
 
         Assert.Equal(codes.Count, codes.Distinct().Count());
-        Assert.All(codes, c => Assert.Matches("^ABS-MARIE[A-Z2-9]{1,3}$", c));
+        Assert.All(codes, c => Assert.Matches("^ABS-[1-9][0-9]{6}$", c));
     }
 
     [Fact]
@@ -97,12 +97,11 @@ public class ParrainageTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         using var scope = factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<ServiceParrainage>();
-        foreach (var prenom in new[] { "Léa", "Marie", "Jean-François", "Zoé", "Maximilien" })
-            for (var i = 0; i < 60; i++)
-            {
-                var code = CodeParrain.Generer(prenom, 1 + i % 2);
-                Assert.Equal($"https://abs-clean.test/devis?parrain={code}", Decoder(service, code));
-            }
+        for (var i = 0; i < 300; i++)
+        {
+            var code = CodeParrain.Generer();
+            Assert.Equal($"https://abs-clean.test/devis?parrain={code}", Decoder(service, code));
+        }
     }
 
     [Fact]

@@ -72,9 +72,9 @@ describe('Devis et fenêtre de coordonnées', () => {
     page.querySelector<HTMLButtonElement>('[aria-label="Ajouter : Velux"]')!.click();
     saisir('localisation', '91000');
     const code = page.querySelector<HTMLInputElement>('#code-parrain')!;
-    code.value = 'abs-marie7';
+    code.value = 'abs-1765321';
     code.dispatchEvent(new Event('change'));
-    http.expectOne('/api/parrainage/ABS-MARIE7').flush({ code: 'ABS-MARIE7', valide: true });
+    http.expectOne('/api/parrainage/ABS-1765321').flush({ code: 'ABS-1765321', valide: true });
     page.querySelector<HTMLButtonElement>('.valider')!.click();
     await stable();
 
@@ -94,12 +94,12 @@ describe('Devis et fenêtre de coordonnées', () => {
       codePostal: '91000',
       consentement: true,
       siteWeb: '',
-      codeParrainage: 'ABS-MARIE7',
+      codeParrainage: 'ABS-1765321',
     });
     expect(requete.request.body).not.toHaveProperty('total');
 
     requete.flush(
-      { numero: 'ABS-2026-0001', total: 45, codeParrain: 'ABS-LEA7', lienParrainage: 'https://abs-clean.test/devis?parrain=ABS-LEA7', codeParrainageSaisi: 'applique' },
+      { numero: 'ABS-2026-0001', total: 45, codeParrain: 'ABS-4820596', lienParrainage: 'https://abs-clean.test/devis?parrain=ABS-4820596', codeParrainageSaisi: 'applique' },
       { status: 201, statusText: 'Created' },
     );
     await stable();
