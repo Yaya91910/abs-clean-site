@@ -65,8 +65,8 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@a
     .ref-wrap { width: 100%; padding: clamp(26px, 5vw, 48px); display: flex; flex-wrap: wrap; align-items: center; gap: clamp(24px, 4vw, 48px); text-align: left; position: relative; overflow: hidden; }
     .ref-text { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
     .ref-text .title { margin-top: 12px; }
-    .ref-offer { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; background: linear-gradient(135deg, rgba(76, 155, 224, 0.12), rgba(47, 111, 214, 0.10)); border: 1px solid rgba(47, 111, 214, 0.18); }
-    .ref-badge { flex-shrink: 0; padding: 10px 14px; border-radius: 14px; background: linear-gradient(135deg, var(--accent2), var(--accent) 55%, #1F55B5); color: #FFFFFF; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; box-shadow: 0 12px 24px -10px var(--accent-shadow); white-space: nowrap; }
+    .ref-offer { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; background: linear-gradient(135deg, rgba(127, 174, 224, 0.12), rgba(61, 108, 181, 0.10)); border: 1px solid rgba(61, 108, 181, 0.18); }
+    .ref-badge { flex-shrink: 0; padding: 10px 14px; border-radius: 14px; background: linear-gradient(135deg, var(--accent), var(--accent-fonce)); color: #FFFFFF; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; box-shadow: 0 12px 24px -10px var(--accent-shadow); white-space: nowrap; }
     .ref-offer-txt { font-size: 15px; line-height: 1.5; color: var(--ink); }
     .ref-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
     .ref-steps li { display: flex; align-items: center; gap: 12px; font-size: 15px; color: #3C4A5C; }
@@ -75,13 +75,13 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@a
     .conditions { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
     .share-btn { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid #D7E0EA; background: rgba(255, 255, 255, 0.9); color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
     .share-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -12px rgba(21, 52, 95, 0.4); background: #FFFFFF; }
-    .share-btn.primary { background: linear-gradient(135deg, var(--accent), #1F55B5); color: #FFFFFF; border-color: transparent; box-shadow: 0 12px 22px -12px var(--accent-shadow); }
-    .ref-card { position: relative; overflow: hidden; flex: 0 1 300px; min-width: 240px; margin: 0 auto; padding: 26px 22px 22px; border-radius: 26px; background: linear-gradient(150deg, var(--ink) 0%, #183A6A 55%, #1F55B5 120%); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; box-shadow: 0 30px 60px -28px rgba(21, 52, 95, 0.6); }
-    .ref-card-glow { position: absolute; top: -70px; right: -70px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(76, 155, 224, 0.55), transparent 70%); pointer-events: none; }
-    .ref-card-label { position: relative; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A9D2F5; }
-    .ref-code { position: relative; font-size: 24px; font-weight: 800; letter-spacing: 0.08em; color: #FFFFFF; padding: 6px 14px; border-radius: 12px; border: 1.5px dashed rgba(255, 255, 255, 0.4); }
-    .ref-card-hint { position: relative; font-size: 14px; font-weight: 600; color: #FFFFFF; }
-    .ref-card-note { position: relative; font-size: 11px; color: rgba(255, 255, 255, 0.6); line-height: 1.4; max-width: 220px; }
+    .share-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-fonce)); color: #FFFFFF; border-color: transparent; box-shadow: 0 12px 22px -12px var(--accent-shadow); }
+    .ref-card { position: relative; overflow: hidden; flex: 0 1 300px; min-width: 240px; margin: 0 auto; padding: 26px 22px 22px; border-radius: 26px; background: linear-gradient(150deg, var(--brume) 0%, var(--brume2) 100%); border: 1px solid #FFFFFF; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; box-shadow: 0 24px 50px -30px rgba(21, 52, 95, 0.35); }
+    .ref-card-glow { position: absolute; top: -70px; right: -70px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.85), transparent 70%); pointer-events: none; }
+    .ref-card-label { position: relative; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-texte); }
+    .ref-code { position: relative; font-size: 24px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink); background: #FFFFFF; padding: 6px 14px; border-radius: 12px; border: 1.5px dashed var(--accent2); }
+    .ref-card-hint { position: relative; font-size: 14px; font-weight: 600; color: var(--ink); }
+    .ref-card-note { position: relative; font-size: 11px; color: var(--text-muted); line-height: 1.4; max-width: 220px; }
     @media (max-width: 640px) {
       .ref-text { align-items: center; text-align: center; }
       .ref-text .title br { display: none; }

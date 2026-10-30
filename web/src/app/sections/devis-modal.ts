@@ -167,7 +167,7 @@ import { Fleche } from '../shared/fleche';
     .succes-ico { width: 72px; height: 72px; border-radius: 999px; background: linear-gradient(135deg, #3FD08F, var(--success)); display: flex; align-items: center; justify-content: center; box-shadow: 0 14px 30px -12px rgba(34, 181, 115, 0.7); }
     .succes h3 { font-size: 24px; }
     .succes p { font-size: 15px; color: var(--text-muted); margin: 0; max-width: 360px; line-height: 1.6; }
-    .ref-success { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: rgba(47, 111, 214, 0.06); border: 1px solid rgba(47, 111, 214, 0.15); text-align: left; }
+    .ref-success { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: rgba(61, 108, 181, 0.06); border: 1px solid rgba(61, 108, 181, 0.15); text-align: left; }
     .qr-box.small { width: 92px; height: 92px; padding: 6px; border-radius: 14px; flex-shrink: 0; box-shadow: 0 8px 18px -10px rgba(21, 52, 95, 0.4); border: 1px solid #E3E8F0; }
     .ref-success-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .ref-label { font-size: 12px; font-weight: 700; color: var(--accent-texte); text-transform: uppercase; letter-spacing: 0.08em; }

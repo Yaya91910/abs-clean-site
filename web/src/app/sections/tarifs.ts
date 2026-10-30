@@ -81,7 +81,7 @@ const PRESENTATION: Record<string, { unite: string; note: string }> = {
             </div>
           </div>
           <div class="price-band-cta">
-            <a href="#devis" class="btn-devis light"><span class="label">Calculer mon prix</span><span class="arrow"><abs-fleche [taille]="18" couleur="#FFFFFF" /></span></a>
+            <a href="#devis" class="btn-devis"><span class="label">Calculer mon prix</span><span class="arrow"><abs-fleche [taille]="18" /></span></a>
             <span class="price-band-small">Gratuit · sans engagement · option encadrements, rails et rebords sur devis</span>
           </div>
         </div>
@@ -97,8 +97,8 @@ const PRESENTATION: Record<string, { unite: string; note: string }> = {
     @media (max-width: 360px) { .price-grid { grid-template-columns: 1fr; } }
     .price-card { position: relative; overflow: hidden; padding: 26px 18px 22px; display: flex; flex-direction: column; align-items: center; gap: 16px; transition: transform .25s ease, box-shadow .25s ease; }
     .price-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
-    .price-card::after { content: ""; position: absolute; top: -60px; right: -60px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(76, 155, 224, 0.28), transparent 70%); pointer-events: none; transition: transform .4s ease; }
-    .price-card:hover { transform: translateY(-6px); box-shadow: 0 34px 60px -30px rgba(21, 52, 95, 0.45), 0 0 0 2px rgba(47, 111, 214, 0.25); }
+    .price-card::after { content: ""; position: absolute; top: -60px; right: -60px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(127, 174, 224, 0.28), transparent 70%); pointer-events: none; transition: transform .4s ease; }
+    .price-card:hover { transform: translateY(-4px); box-shadow: 0 34px 60px -30px rgba(21, 52, 95, 0.45), 0 0 0 2px rgba(61, 108, 181, 0.25); }
     .price-card:hover::after { transform: scale(1.5); }
     .price-top { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .price-name { font-size: 16px; font-weight: 700; letter-spacing: normal; }
@@ -107,18 +107,18 @@ const PRESENTATION: Record<string, { unite: string; note: string }> = {
     .price-amount { font-size: clamp(42px, 6vw, 54px); font-weight: 800; color: var(--accent); background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.04em; line-height: 1; display: inline-flex; align-items: flex-start; }
     .price-cur { font-size: 0.45em; margin: 0.18em 0 0 3px; letter-spacing: 0; }
     .price-unit { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-    .price-note { font-size: 12px; font-weight: 500; color: var(--ink); padding: 6px 12px; border-radius: 999px; background: rgba(47, 111, 214, 0.08); }
+    .price-note { font-size: 12px; font-weight: 500; color: var(--ink); padding: 6px 12px; border-radius: 999px; background: rgba(61, 108, 181, 0.08); }
 
-    .price-band { position: relative; overflow: hidden; width: 100%; border-radius: 26px; padding: clamp(26px, 4vw, 38px) clamp(22px, 4vw, 42px); background: linear-gradient(135deg, var(--ink) 0%, #183A6A 60%, var(--accent) 130%); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; text-align: left; box-shadow: 0 30px 60px -30px rgba(21, 52, 95, 0.6); }
-    .price-band-glow { position: absolute; top: -90px; right: 18%; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgba(76, 155, 224, 0.55), transparent 70%); pointer-events: none; }
+    .price-band { position: relative; overflow: hidden; width: 100%; border-radius: 26px; padding: clamp(26px, 4vw, 38px) clamp(22px, 4vw, 42px); background: linear-gradient(135deg, var(--brume) 0%, var(--brume2) 100%); border: 1px solid #FFFFFF; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; text-align: left; box-shadow: 0 24px 50px -34px rgba(21, 52, 95, 0.35); }
+    .price-band-glow { position: absolute; top: -90px; right: 18%; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent 70%); pointer-events: none; }
     .price-band-text { position: relative; display: flex; flex-direction: column; gap: 10px; flex: 1 1 340px; min-width: 0; }
-    .price-band-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A9D2F5; }
-    .price-band-title { font-size: clamp(22px, 3vw, 28px); line-height: 1.2; color: #FFFFFF; }
+    .price-band-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-texte); }
+    .price-band-title { font-size: clamp(22px, 3vw, 28px); line-height: 1.2; color: var(--ink); }
     .price-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-    .price-chip { padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #DBEAFE; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.18); }
-    .price-chip.hot { color: var(--ink); background: linear-gradient(135deg, #A9D2F5, #CFE4F8); border-color: transparent; }
+    .price-chip { padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink); background: rgba(255, 255, 255, 0.7); border: 1px solid var(--trait); }
+    .price-chip.hot { color: #FFFFFF; background: var(--accent); border-color: transparent; }
     .price-band-cta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 0 1 auto; }
-    .price-band-small { font-size: 12px; color: rgba(255, 255, 255, 0.7); text-align: center; max-width: 260px; line-height: 1.5; }
+    .price-band-small { font-size: 12px; color: var(--text-muted); text-align: center; max-width: 260px; line-height: 1.5; }
     @media (max-width: 480px) { .price-chip { padding: 6px 11px; font-size: 12px; } .price-chips { gap: 6px; } .price-note { font-size: 11px; padding: 5px 10px; } .price-card { padding: 24px 12px 18px; } }
     @media (max-width: 640px) { .price-band { text-align: center; justify-content: center; } .price-band-text { align-items: center; } .price-chips { justify-content: center; } .price-band-title br { display: none; } }
   `,

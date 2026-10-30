@@ -4,13 +4,13 @@
   overflow: clip;
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(180deg, #F4F8FF 0%, #EAF2FF 45%, #F4F8FF 100%);
+  background: linear-gradient(180deg, #F7FAFD 0%, #EFF4FB 45%, #F7FAFD 100%);
 }
 
 .dots {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(21, 52, 95, 0.07) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(rgba(21, 52, 95, 0.045) 1.2px, transparent 1.2px);
   background-size: 22px 22px;
   pointer-events: none;
 }
@@ -20,11 +20,11 @@
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  animation: drift 18s ease-in-out infinite alternate;
+  animation: drift 26s ease-in-out infinite alternate;
 
-  &.a { top: -160px; left: -160px; width: 560px; height: 560px; opacity: 0.85; background: radial-gradient(circle at 40% 40%, var(--accent2) 0%, rgba(76, 155, 224, 0.35) 40%, transparent 70%); }
-  &.b { top: 120px; right: -200px; width: 620px; height: 620px; opacity: 0.45; animation-duration: 24s; animation-direction: alternate-reverse; background: radial-gradient(circle, var(--accent) 0%, rgba(47, 111, 214, 0.25) 45%, transparent 70%); }
-  &.c { top: 560px; left: 30%; width: 420px; height: 420px; opacity: 0.45; animation-duration: 30s; background: radial-gradient(circle, #7DB6EA 0%, transparent 65%); }
+  &.a { top: -160px; left: -160px; width: 560px; height: 560px; opacity: 0.38; background: radial-gradient(circle at 40% 40%, var(--accent2) 0%, rgba(127, 174, 224, 0.3) 40%, transparent 70%); }
+  &.b { top: 120px; right: -200px; width: 620px; height: 620px; opacity: 0.16; animation-duration: 32s; animation-direction: alternate-reverse; background: radial-gradient(circle, var(--accent) 0%, rgba(61, 108, 181, 0.2) 45%, transparent 70%); }
+  &.c { top: 560px; left: 30%; width: 420px; height: 420px; opacity: 0.22; animation-duration: 40s; background: radial-gradient(circle, #A9C9EC 0%, transparent 65%); }
 }
 
 @keyframes drift {

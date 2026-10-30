@@ -19,13 +19,13 @@ describe('App', () => {
     expect(page.querySelector('h1')?.textContent).toContain('La transparence');
   });
 
-  it('contient les ancres de navigation dans l’ordre de la maquette', async () => {
+  it('contient les ancres de navigation dans l’ordre de la page', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const page = fixture.nativeElement as HTMLElement;
 
     const ids = Array.from(page.querySelectorAll('section[id]')).map((s) => s.id);
-    expect(ids).toEqual(['qui-sommes-nous', 'prestations', 'tarifs', 'faq', 'devis', 'parrainage']);
+    expect(ids).toEqual(['prestations', 'tarifs', 'devis', 'qui-sommes-nous', 'faq', 'parrainage']);
     const ancres = Array.from(page.querySelectorAll<HTMLAnchorElement>('nav a[href^="/#"]'));
     expect(ancres.length).toBeGreaterThan(0);
     for (const lien of ancres) {

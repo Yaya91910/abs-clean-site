@@ -29,7 +29,7 @@ Le site doit :
 - **Ne rien inventer** sur l'entreprise (assurance, produits, délais, moyens de paiement, avis clients). Utiliser uniquement ce document.
 - **Demander avant** toute action payante ou irréversible (achat de domaine, envoi de SMS réels en masse, suppression de données).
 - **Petits commits** clairs, une fonctionnalité à la fois. Branche `main` toujours déployable.
-- **Fidélité visuelle** : la maquette `maquette/maquette-reference.dc.html` est la référence (couleurs, espacements, composants, textes).
+- **Fidélité visuelle** : la maquette `maquette/maquette-reference.dc.html` est la référence pour les textes et les composants. L'ordre des sections et la palette ont été revus à la demande du gérant (voir §6 et §20 « Choix importants ») : ne pas revenir à la maquette sur ces points.
 
 ---
 
@@ -96,21 +96,21 @@ Couleurs (extraites du logo) :
 
 ## 6. Sections et contenus
 
-Ordre de la page (textes exacts dans la maquette) :
+Ordre de la page (textes exacts dans la maquette ; ordre revu pour la conversion, voir §20) :
 
-1. **En-tête collant** : logo, liens (À propos, Prestations, Tarifs, FAQ), bouton « Devis gratuit » avec badge « 2 MIN ». Sur mobile < 640 px : logo + bouton uniquement.
-2. **Héros** : badge « Essonne · Île-de-France · Devis instantané », titre « La transparence, notre métier. », boutons « Obtenir mon devis gratuit » et « Découvrir nos prestations », photo, pastilles de confiance.
-3. **À propos** : texte de présentation + Ponctualité, Disponibilité, Discrétion.
-4. **Avant / Après** : visuel comparatif (photos réelles `À FOURNIR`).
-5. **Prestations** : Particuliers, Commerces, Professionnels, Option (encadrements, rails, rebords).
-6. **Tarifs** : 4 cartes (voir §7) + bandeau « Formules régulières ».
-7. **Comment ça marche** : 3 étapes.
-8. **FAQ** : accordéon, 8 questions, une seule ouverte à la fois, `aria-expanded`.
-9. **Devis** : formulaire + estimation en direct (voir §7 et §8).
-10. **Bandeau final** « Prêt pour des vitres impeccables ? ».
-10 bis. **Parrainage** : offre −10 %, 3 étapes, boutons Copier le lien / WhatsApp / SMS / E-mail, carte avec code personnel et QR code (voir §9 bis).
-11. **Réseaux sociaux** : TikTok, Instagram (liens `À FOURNIR`, ouverture dans un nouvel onglet, `rel="noopener noreferrer"`).
-12. **Pied de page** : logo, zone, liens, contact (`À FOURNIR`), mentions légales, confidentialité.
+1. **En-tête collant** : logo, liens (Prestations, Tarifs, À propos, FAQ, Parrainage), bouton « Devis gratuit » avec badge « 2 MIN ». Sur mobile < 720 px : logo + bouton uniquement.
+2. **Héros** : badge « Essonne · Île-de-France · Devis instantané », titre « La transparence, notre métier. », boutons « Obtenir mon devis gratuit » et « Découvrir nos prestations », pastilles de confiance, photo (à droite sur ordinateur).
+3. **Comment ça marche** : 3 étapes.
+4. **Prestations** : Particuliers, Commerces, Professionnels, Option (encadrements, rails, rebords).
+5. **Tarifs** : 4 cartes (voir §7) + bandeau « Formules régulières ».
+6. **Devis** : formulaire + estimation en direct (voir §7 et §8) ; sur ordinateur, récapitulatif collé à droite.
+7. **Avant / Après** : visuel comparatif (photos réelles `À FOURNIR`).
+8. **À propos** : texte de présentation + Ponctualité, Disponibilité, Discrétion.
+9. **FAQ** : accordéon, 8 questions, une seule ouverte à la fois, `aria-expanded`.
+10. **Parrainage** : offre −10 %, 3 étapes, boutons Copier le lien / WhatsApp / SMS / E-mail, carte avec code personnel et QR code (voir §9 bis).
+11. **Bandeau final** « Prêt pour des vitres impeccables ? ».
+12. **Réseaux sociaux** : TikTok, Instagram (liens `À FOURNIR`, ouverture dans un nouvel onglet, `rel="noopener noreferrer"`).
+13. **Pied de page** : logo, zone, liens, contact (`À FOURNIR`), mentions légales, confidentialité.
 
 Photos : `À FOURNIR` (droits d'utilisation obligatoires — pas d'images de banque sans licence).
 
@@ -372,6 +372,8 @@ Tests : API 128 (xUnit), site 22 (Vitest), Playwright 23 (dont accessibilité ax
 - **Lien du gérant** : jeton de 256 bits après `#`, empreinte seule en base, validation atomique (`ExecuteUpdate`).
 - **Front sans routeur** : `app.ts` choisit la page selon l'adresse ; passer au routeur Angular si les pages se multiplient.
 - **Node 22 LTS** partout (CI, image, tests) ; TypeScript suit Angular (`ng update`) : Dependabot ignore leurs versions majeures.
+- **Page réorganisée et palette adoucie** (demande du gérant) : promesse → 3 étapes → prestations → tarifs → devis, la réassurance (avant/après, à propos, FAQ) vient après ; bleu `--accent` `#3D6CB5` (au lieu de `#2F6FD6`), bandeaux clairs `--brume` au lieu du bleu nuit, reflets et halos plus discrets. Vérifier le contraste AA (axe) de tout petit texte posé sur `--brume`.
+- **Effets** (`web/src/app/shared/effets.ts`) : apparition des sections au défilement (seulement sous la ligne de flottaison au chargement, pour ne rien masquer à axe ni à Lighthouse), halo qui suit le pointeur sur les cartes de verre, en-tête translucide, bandeau défilant (`defilant.ts`), curseur avant/après (`input range` invisible, donc clavier et lecteur d'écran). Tout est coupé avec `prefers-reduced-motion`.
 - **Deux gris et le vert du badge assombris** par rapport à la maquette, pour le contraste AA (§14).
 
 ### Lancer et tester (sur ce Mac)
