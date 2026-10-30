@@ -37,7 +37,7 @@ public class NotificationsTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var gerant = Assert.Single(factory.Envois.Emails, e => e.A == "gerant@example.com" && e.Sujet.Contains(numero));
         Assert.Equal("lea.envoi@example.com", gerant.RepondreA);
         Assert.Contains("06 12 34 56 78", gerant.Html);
-        Assert.NotNull(gerant.PieceJointe);
+        Assert.StartsWith($"Fiche-{numero}-CLI-", gerant.PieceJointe?.Nom);
 
         Assert.Contains(factory.Envois.Sms, s => s.Numero == "33611223344" && s.Texte == "Nouveau devis ABS : Léa Martin, Évry, à partir de 265 € — 06 12 34 56 78");
 

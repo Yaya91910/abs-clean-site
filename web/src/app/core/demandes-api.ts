@@ -35,6 +35,12 @@ export interface DemandeAcceptee {
   lienParrainage: string;
   /** Sort du code saisi par le client : appliqué, ignoré (inconnu, auto-parrainage…) ou aucun. */
   codeParrainageSaisi: 'applique' | 'ignore' | null;
+  /** Numéro client stable (CLI-00001), le même pour toutes les demandes du client. */
+  numeroClient: string;
+  /** Client déjà connu avec le même e-mail et le même téléphone : accueil personnalisé. */
+  clientReconnu: boolean;
+  /** Coordonnées directes d'ABS clean pour un client reconnu (null tant qu'elles ne sont pas renseignées). */
+  contact: { telephone: string | null; email: string | null } | null;
 }
 
 export type ResultatEnvoi =

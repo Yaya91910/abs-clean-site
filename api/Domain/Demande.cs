@@ -11,6 +11,9 @@ public sealed class Demande
     public string Numero { get; set; } = "";
     public DateTime CreeLe { get; set; }
 
+    public int ClientId { get; set; }
+    public Client Client { get; set; } = null!;
+
     public Profil Profil { get; set; }
     public Frequence Frequence { get; set; }
     public int NbVitres { get; set; }
