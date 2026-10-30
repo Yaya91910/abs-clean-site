@@ -6,12 +6,24 @@ namespace AbsClean.Api.Infrastructure;
 
 public sealed class AbsCleanDb(DbContextOptions<AbsCleanDb> options) : DbContext(options)
 {
+    public DbSet<Client> Clients => Set<Client>();
     public DbSet<Demande> Demandes => Set<Demande>();
     public DbSet<Parrainage> Parrainages => Set<Parrainage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var client = modelBuilder.Entity<Client>();
+        client.HasIndex(c => c.Numero).IsUnique();
+        client.HasIndex(c => c.Email);
+        client.HasIndex(c => c.Telephone);
+        client.Property(c => c.Numero).HasMaxLength(12);
+        client.Property(c => c.Nom).HasMaxLength(60);
+        client.Property(c => c.Prenom).HasMaxLength(60);
+        client.Property(c => c.Telephone).HasMaxLength(10);
+        client.Property(c => c.Email).HasMaxLength(254);
+
         var demande = modelBuilder.Entity<Demande>();
+        demande.HasOne(d => d.Client).WithMany(c => c.Demandes).HasForeignKey(d => d.ClientId).OnDelete(DeleteBehavior.Restrict);
 
         demande.HasIndex(d => d.Numero).IsUnique();
         demande.HasIndex(d => d.CodeParrainPersonnel).IsUnique();

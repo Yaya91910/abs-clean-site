@@ -14,6 +14,7 @@ public static class ModelesEmail
             <p>Bonjour {H(d.Prenom)},</p>
             <p>Merci pour votre demande. {(devisPdf is null ? "Voici le récapitulatif de votre devis" : "Vous trouverez votre devis en pièce jointe")}
             (n° <strong>{H(d.Numero)}</strong>) : <strong>à partir de {DevisPdf.Euros(d.Total)}</strong>.</p>
+            <p>Votre numéro client : <strong>{H(d.Client.Numero)}</strong> — à rappeler pour toute demande.</p>
             <p>{Tarifs.MentionEstimation}. ABS clean vous recontacte rapidement pour fixer l'intervention.</p>
             <table style="margin:20px 0;border:1px solid #D7E0EA;border-radius:12px;padding:12px"><tr>
               <td style="padding-right:14px"><img src="{H(qrPng)}" width="110" height="110" alt="QR code de parrainage"></td>
@@ -26,11 +27,13 @@ public static class ModelesEmail
             """),
         PieceJointe: devisPdf);
 
-    public static EmailSortant Gerant(Demande d, string adresseGerant, PieceJointe? devisPdf, string lienValidation)
+    public static EmailSortant Gerant(FicheDevis fiche, string adresseGerant, PieceJointe? fichePdf, string lienValidation)
     {
+        var d = fiche.Demande;
         var lignes = new (string Titre, string? Valeur)[]
         {
             ("Numéro", d.Numero),
+            ("N° client", d.Client.Numero),
             ("Total", $"à partir de {DevisPdf.Euros(d.Total)}"),
             ("Quantités", $"{d.NbVitres} vitre(s), {d.NbBaies} baie(s) vitrée(s), {d.NbVelux} velux" + (d.NbVitrines > 0 ? $", {d.NbVitrines} vitrine(s)" : "")),
             ("Profil", DevisPdf.Libelle(d.Profil)),
@@ -48,18 +51,28 @@ public static class ModelesEmail
             $"""<tr><th align="left" style="padding:6px 12px 6px 0;color:#5B6B80;font-weight:600;vertical-align:top">{l.Titre}</th><td style="padding:6px 0">{H(l.Valeur!)}</td></tr>"""));
         var noteParrainage = d.CodeParrainUtilise is null ? "" : " La confirmation active la remise de −10 % du parrain et le prévient par e-mail.";
 
+        // Client existant : mis en avant, avec téléphone et e-mail cliquables pour un contact rapide et personnalisé.
+        var bandeau = $"""
+            <div style="background:{(fiche.ClientExistant ? "#E8F1FF" : "#F4F8FF")};border-left:4px solid {(fiche.ClientExistant ? "#2F6FD6" : "#D7E0EA")};padding:12px 16px;margin-bottom:16px">
+              <div style="font-size:12px;font-weight:bold;color:#2559B8;letter-spacing:0.06em">{(fiche.ClientExistant ? $"CLIENT EXISTANT · {fiche.RangDemande}e DEMANDE" : "NOUVEAU CLIENT")}</div>
+              <div style="font-size:17px;font-weight:bold">{H(d.Prenom)} {H(d.Nom)} — {H(d.Client.Numero)}</div>
+              <div style="margin-top:6px"><a href="tel:{H(d.Telephone)}" style="font-weight:bold;color:#2F6FD6;text-decoration:none">📞 {DevisPdf.FormatTelephone(d.Telephone)}</a>
+              &nbsp;·&nbsp; <a href="mailto:{H(d.Email)}" style="color:#2F6FD6">✉ {H(d.Email)}</a></div>
+            </div>
+            """;
+
         return new EmailSortant(
             adresseGerant,
             "ABS clean",
-            $"Nouveau devis {d.Numero} — {d.Prenom} {d.Nom}, {d.Ville}",
+            (fiche.ClientExistant ? "Client existant · " : "") + $"Nouveau devis {d.Numero} — {d.Prenom} {d.Nom}, {d.Ville}",
             Gabarit($"""
-                <p>Nouvelle demande de devis reçue sur le site.</p><table>{tableau}</table>
+                {bandeau}<p>Nouvelle demande de devis reçue sur le site. La fiche d'intervention est jointe.</p><table>{tableau}</table>
                 <p style="margin-top:24px">Une fois la première intervention réalisée :<br>
                 <a href="{H(lienValidation)}" style="display:inline-block;margin-top:8px;padding:10px 18px;border-radius:999px;background:#2F6FD6;color:#FFFFFF;text-decoration:none;font-weight:bold">Marquer l'intervention comme réalisée</a></p>
                 <p style="font-size:12px;color:#5B6B80">Lien personnel à usage unique : ne le transférez pas.{noteParrainage}</p>
                 """),
             RepondreA: d.Email,
-            PieceJointe: devisPdf);
+            PieceJointe: fichePdf);
     }
 
     public static EmailSortant RemiseParrain(Demande parrain, Demande filleul) => new(

@@ -32,9 +32,13 @@ public sealed class ServiceParrainage(
         db.Demandes.AnyAsync(d => d.CodeParrainPersonnel == code, ct);
 
     /// <summary>QR code du lien de parrainage, en SVG, niveau de correction M.</summary>
-    public string QrSvg(string code)
+    public string QrSvg(string code) => QrSvgDe(Lien(code));
+
+    /// <summary>QR code SVG d'une adresse quelconque (ex. lien de validation du gérant), niveau de correction M.</summary>
+    public static string QrSvgDe(string adresse)
     {
-        using var donnees = Generer(code);
+        using var generateur = new QRCodeGenerator();
+        using var donnees = generateur.CreateQrCode(adresse, QRCodeGenerator.ECCLevel.M);
         return new SvgQRCode(donnees).GetGraphic(8, "#15345F", "#FFFFFF", true, SvgQRCode.SizingMode.ViewBoxAttribute);
     }
 
