@@ -71,7 +71,7 @@ public sealed class EnvoisEnArrierePlan(FileEnvois file, IServiceScopeFactory sc
         {
             using var scope = scopes.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AbsCleanDb>();
-            var demande = await db.Demandes.FirstOrDefaultAsync(d => d.Id == envoi.DemandeId, arret);
+            var demande = await db.Demandes.Include(d => d.Client).FirstOrDefaultAsync(d => d.Id == envoi.DemandeId, arret);
             if (demande is null) return;
 
             await scope.ServiceProvider.GetRequiredService<NotificationsDemande>().EnvoyerAsync(demande, envoi.JetonIntervention, arret);
