@@ -34,6 +34,8 @@ import { Fleche } from '../shared/fleche';
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#9BB3CC" stroke-width="1.4" /><circle cx="8.5" cy="10" r="1.4" stroke="#9BB3CC" stroke-width="1.4" /><path d="M21 15l-5-4-4 3-3-2-6 5" stroke="#9BB3CC" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
             <span>[Photo : intervention ABS clean]</span>
           </div>
+          <div class="flottant haut" aria-hidden="true"><span class="live-dot"></span>Estimation en direct</div>
+          <div class="flottant bas" aria-hidden="true">Jusqu'à <strong>2,50 m</strong> de hauteur</div>
         </div>
       </div>
     </section>
@@ -57,7 +59,20 @@ import { Fleche } from '../shared/fleche';
     .chev { display: inline-flex; color: var(--accent); }
     @media (max-width: 400px) { .btn-discover { font-size: 15px; } }
 
-    .visuel-cadre { width: 100%; padding: 10px; }
+    .visuel-cadre { position: relative; width: 100%; padding: 10px; }
+    /* Pastilles de verre qui flottent doucement au-dessus de la photo. */
+    .flottant {
+      position: absolute; display: inline-flex; align-items: center; gap: 9px; padding: 11px 16px; border-radius: 16px;
+      font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap;
+      background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(16px) saturate(170%); -webkit-backdrop-filter: blur(16px) saturate(170%);
+      border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: 0 18px 40px -22px rgba(21, 52, 95, 0.45);
+      animation: flotter 7s ease-in-out infinite alternate;
+    }
+    .flottant strong { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+    .flottant.haut { top: 28px; left: -14px; }
+    .flottant.bas { bottom: 30px; right: -14px; animation-delay: -3.5s; }
+    @keyframes flotter { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+    @media (max-width: 520px) { .flottant.haut { left: 18px; } .flottant.bas { right: 18px; } }
     .hero-visual {
       width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; background: linear-gradient(135deg, var(--brume), #F7FAFD);
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 13px; color: var(--text-muted);

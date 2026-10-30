@@ -373,6 +373,7 @@ Tests : API 128 (xUnit), site 22 (Vitest), Playwright 23 (dont accessibilité ax
 - **Front sans routeur** : `app.ts` choisit la page selon l'adresse ; passer au routeur Angular si les pages se multiplient.
 - **Node 22 LTS** partout (CI, image, tests) ; TypeScript suit Angular (`ng update`) : Dependabot ignore leurs versions majeures.
 - **Page réorganisée et palette adoucie** (demande du gérant) : promesse → 3 étapes → prestations → tarifs → devis, la réassurance (avant/après, à propos, FAQ) vient après ; bleu `--accent` `#3D6CB5` (au lieu de `#2F6FD6`), bandeaux clairs `--brume` au lieu du bleu nuit, reflets et halos plus discrets. Vérifier le contraste AA (axe) de tout petit texte posé sur `--brume`.
+- **Effets** (`web/src/app/shared/effets.ts`) : apparition des sections au défilement (seulement sous la ligne de flottaison au chargement, pour ne rien masquer à axe ni à Lighthouse), halo qui suit le pointeur sur les cartes de verre, en-tête translucide, bandeau défilant (`defilant.ts`), curseur avant/après (`input range` invisible, donc clavier et lecteur d'écran). Tout est coupé avec `prefers-reduced-motion`.
 - **Deux gris et le vert du badge assombris** par rapport à la maquette, pour le contraste AA (§14).
 
 ### Lancer et tester (sur ce Mac)

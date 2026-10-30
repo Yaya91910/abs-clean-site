@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DOCUMENT, afterNextRender, inject, signal } from '@angular/core';
 import { Fleche } from '../shared/fleche';
 import { Logo } from '../shared/logo';
 
@@ -6,6 +6,7 @@ import { Logo } from '../shared/logo';
   selector: 'abs-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Logo, Fleche],
+  host: { '[class.defile]': 'defile()' },
   template: `
     <header class="header">
       <a href="/" class="brand" aria-label="ABS clean, retour en haut de page"><abs-logo [hauteur]="56" /></a>
@@ -27,9 +28,11 @@ import { Logo } from '../shared/logo';
     :host { position: sticky; top: 0; z-index: 50; display: block; }
     .header {
       width: 100%; padding: 12px 20px 10px; display: flex; align-items: center; justify-content: space-between; gap: 14px;
-      background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(21, 52, 95, 0.06);
+      /* Verre très léger en haut de page, plus dense avec une ombre dès qu'on défile. */
+      background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%);
+      border-bottom: 1px solid transparent; transition: background .3s ease, box-shadow .3s ease, border-color .3s ease;
     }
+    :host(.defile) .header { background: rgba(255, 255, 255, 0.78); border-bottom-color: rgba(21, 52, 95, 0.06); box-shadow: 0 10px 30px -22px rgba(21, 52, 95, 0.4); }
     .brand { display: inline-flex; align-items: center; flex-shrink: 0; }
     .right { display: flex; align-items: center; gap: 22px; }
     .nav-links { display: flex; align-items: center; gap: 26px; }
@@ -59,4 +62,16 @@ import { Logo } from '../shared/logo';
     }
   `,
 })
-export class Header {}
+export class Header {
+  protected readonly defile = signal(false);
+
+  constructor() {
+    const fenetre = inject(DOCUMENT).defaultView;
+    afterNextRender(() => {
+      if (!fenetre) return;
+      const suivre = () => this.defile.set(fenetre.scrollY > 8);
+      fenetre.addEventListener('scroll', suivre, { passive: true });
+      suivre();
+    });
+  }
+}

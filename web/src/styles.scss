@@ -12,7 +12,7 @@
   --brume2: #E1ECF8;
   --trait: #DCE5F0;
   --text-muted: #5B6B80;
-  --text-soft: #66778C; /* #7C8CA0 dans la maquette, assombri pour le contraste AA */
+  --text-soft: #5F7086; /* #7C8CA0 dans la maquette, assombri pour le contraste AA (y compris sur verre translucide) */
   --success: #22B573;
   --danger: #C2410C;
   --radius-card: 24px;
@@ -57,9 +57,22 @@ p.a-fournir { display: block; padding: 10px 14px; }
 }
 
 /* Cartes « verre » */
-.glass { background: rgba(255, 255, 255, 0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: 0 18px 44px -30px rgba(21, 52, 95, 0.22); border-radius: var(--radius-card); }
+.glass { background: rgba(255, 255, 255, 0.64); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 18px 44px -30px rgba(21, 52, 95, 0.22); border-radius: var(--radius-card); }
 .card { padding: 30px 22px; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: transform .2s ease, box-shadow .2s ease; }
 .card:hover { transform: translateY(-3px); box-shadow: 0 26px 52px -30px rgba(21, 52, 95, 0.28); }
+
+/* Halo qui suit le pointeur sur les cartes de verre (position fournie par shared/effets.ts). */
+.glass.card, .glass.price-card { background-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, -200px), rgba(127, 174, 224, 0.2), transparent 70%); }
+
+/* Apparition au défilement (shared/effets.ts) : les sections sous la ligne de flottaison montent en fondu, cartes en cascade. */
+.a-reveler:not(.vu) :is(.head, .card, .price-card, .formulaire, .cadre, .price-band, .ref-wrap, .band, .faq-item, .social-wrap) { opacity: 0; }
+.a-reveler.vu :is(.head, .card, .price-card, .formulaire, .cadre, .price-band, .ref-wrap, .band, .faq-item, .social-wrap) { animation: monter .9s cubic-bezier(.2, .7, .2, 1) backwards; }
+.a-reveler.vu :is(.card, .price-card, .faq-item):nth-child(2) { animation-delay: .08s; }
+.a-reveler.vu :is(.card, .price-card, .faq-item):nth-child(3) { animation-delay: .16s; }
+.a-reveler.vu :is(.card, .price-card, .faq-item):nth-child(4) { animation-delay: .24s; }
+.a-reveler.vu :is(.card, .price-card, .faq-item):nth-child(n+5) { animation-delay: .3s; }
+.a-reveler.vu :is(.head) ~ * { animation-delay: .1s; }
+@keyframes monter { from { opacity: 0; transform: translateY(32px) scale(.985); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 .card h3 { font-size: 17px; color: var(--ink); }
 .card p { font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.5; }
 .icon-box { color: var(--accent); width: 52px; height: 52px; border-radius: 16px; background: var(--brume); display: flex; align-items: center; justify-content: center; }
