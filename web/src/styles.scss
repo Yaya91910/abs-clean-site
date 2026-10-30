@@ -21,6 +21,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
+/* Téléphone : la barre d'estimation du devis (sections/devis.ts) ne doit jamais masquer le champ qui a le focus. */
+@media (max-width: 899px) { html { scroll-padding-bottom: 84px; } }
 html.modal-ouverte { overflow: hidden; }
 
 body {
