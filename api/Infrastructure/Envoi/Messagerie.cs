@@ -54,7 +54,7 @@ public sealed class BrevoSms(HttpClient http, IOptions<SmsOptions> options) : IE
             recipient = numero,
             content = texte,
             type = "transactional",
-            // « — » n'existe pas dans l'alphabet SMS standard (GSM 7 bits) : envoi en Unicode.
+            // Le message est écrit en alphabet SMS standard (Sms.NouveauDevis) ; Unicode seulement si un caractère y échappait.
             unicodeEnabled = !Sms.EstGsm7(texte),
         };
         using var requete = new HttpRequestMessage(HttpMethod.Post, "https://api.brevo.com/v3/transactionalSMS/send") { Content = JsonContent.Create(corps) };

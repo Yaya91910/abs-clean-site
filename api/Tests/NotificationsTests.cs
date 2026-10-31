@@ -39,7 +39,7 @@ public class NotificationsTests(ApiFactory factory) : IClassFixture<ApiFactory>
         Assert.Contains("06 12 34 56 78", gerant.Html);
         Assert.StartsWith($"Fiche-{numero}-CLI-", gerant.PieceJointe?.Nom);
 
-        Assert.Contains(factory.Envois.Sms, s => s.Numero == "33611223344" && s.Texte == "Nouveau devis ABS : Léa Martin, Évry, à partir de 265 € — 06 12 34 56 78");
+        Assert.Contains(factory.Envois.Sms, s => s.Numero == "33611223344" && s.Texte == "Nouveau devis ABS : Léa Martin, Évry, à partir de 265 € - 06 12 34 56 78");
 
         var demande = factory.AvecBase(db => db.Demandes.Single(d => d.Numero == numero));
         Assert.True(demande.EmailClientEnvoye);
