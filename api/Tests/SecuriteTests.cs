@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using AbsClean.Api.Configuration;
 using AbsClean.Api.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 
@@ -133,5 +134,15 @@ public class LimiteGeneraleTests(LimiteGeneraleFactory factory) : IClassFixture<
         for (var i = 0; i < 4; i++) codes.Add((await client.GetAsync("/api/tarifs")).StatusCode);
 
         Assert.Equal([HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests], codes);
+    }
+
+    [Theory]
+    [InlineData("203.0.113.7", "203.0.113.7")]
+    [InlineData("::ffff:203.0.113.7", "203.0.113.7")]
+    [InlineData("2001:db8:abcd:12:1:2:3:4", "2001:db8:abcd:12::/64")]
+    [InlineData("2001:db8:abcd:12:ffff:ffff:ffff:ffff", "2001:db8:abcd:12::/64")]
+    public void La_limite_par_ip_regroupe_un_bloc_ipv6(string ip, string cle)
+    {
+        Assert.Equal(cle, Services.CleClient(IPAddress.Parse(ip)));
     }
 }

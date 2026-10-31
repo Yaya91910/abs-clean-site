@@ -15,21 +15,26 @@ public static class DevisEndpoints
 {
     public static IEndpointRouteBuilder MapDevisEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/tarifs", () => TypedResults.Ok(new
+        // Grille identique pour tous : gardée 5 minutes par le navigateur (visites rapprochées, retour sur la page).
+        app.MapGet("/api/tarifs", (HttpContext http) =>
         {
-            elements = Tarifs.Elements,
-            frequences = Enum.GetValues<Frequence>().Select(f => new
+            http.Response.Headers.CacheControl = "public, max-age=300";
+            return TypedResults.Ok(new
             {
-                code = f,
-                reductionPourcent = Tarifs.ReductionPourcent(f),
-                reductionConnue = Tarifs.ReductionPourcent(f) is not null,
-            }),
-            profils = Enum.GetValues<Profil>(),
-            quantiteMin = Tarifs.QuantiteMin,
-            quantiteMax = Tarifs.QuantiteMax,
-            mentionEstimation = Tarifs.MentionEstimation,
-            mentionOption = Tarifs.MentionOption,
-        }));
+                elements = Tarifs.Elements,
+                frequences = Enum.GetValues<Frequence>().Select(f => new
+                {
+                    code = f,
+                    reductionPourcent = Tarifs.ReductionPourcent(f),
+                    reductionConnue = Tarifs.ReductionPourcent(f) is not null,
+                }),
+                profils = Enum.GetValues<Profil>(),
+                quantiteMin = Tarifs.QuantiteMin,
+                quantiteMax = Tarifs.QuantiteMax,
+                mentionEstimation = Tarifs.MentionEstimation,
+                mentionOption = Tarifs.MentionOption,
+            });
+        });
 
         app.MapPost("/api/devis/estimation", (EstimationRequete requete) =>
         {

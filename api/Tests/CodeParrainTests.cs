@@ -24,4 +24,18 @@ public class CodeParrainTests
     {
         Assert.Equal(attendu, CodeParrain.Normaliser(saisi));
     }
+
+    [Theory]
+    [InlineData("ABS-1765321", true)]
+    [InlineData("ABS-MARIE7", true)]
+    [InlineData("ABS-INCONNUZZ", true)]
+    [InlineData("176532", false)]
+    [InlineData("ABS-", false)]
+    [InlineData("ABS-1234567890123", false)]
+    [InlineData("ABS-MARIE7'--", false)]
+    [InlineData("ABS-١٢٣٤٥٦٧", false)]
+    public void Format_du_code(string code, bool valide)
+    {
+        Assert.Equal(valide, CodeParrain.FormatValide(code));
+    }
 }

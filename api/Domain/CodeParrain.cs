@@ -26,6 +26,15 @@ public static partial class CodeParrain
         return SansTiret().Match(code) is { Success: true } m ? Prefixe + m.Groups[1].Value : code;
     }
 
-    [GeneratedRegex(@"^(?:ABS)?(\d{7})$")]
+    /// <summary>
+    /// Forme possible d'un code (normalisé) : actuel « ABS-1765321 » ou ancien « ABS-MARIE7 ».
+    /// Tout le reste est inconnu d'office, sans interroger la base ni recopier la saisie dans les journaux.
+    /// </summary>
+    public static bool FormatValide(string code) => Format().IsMatch(code);
+
+    [GeneratedRegex(@"^(?:ABS)?([0-9]{7})$")]
     private static partial Regex SansTiret();
+
+    [GeneratedRegex(@"^ABS-[A-Z0-9]{1,12}\z")]
+    private static partial Regex Format();
 }

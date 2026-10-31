@@ -72,6 +72,12 @@ describe('DevisStore', () => {
     expect(store.codeParrain()).toBe('ABS-1765321');
   });
 
+  it('déclare inconnu un code mal formé sans interroger l’API', () => {
+    store.definirCodeParrain('ABS-<script>');
+    expect(store.codeReconnu()).toBe(false);
+    TestBed.inject(HttpTestingController).expectNone((r) => r.url.startsWith('/api/parrainage/'));
+  });
+
   describe('mémoire des choix', () => {
     /** Nouveau store, comme à la visite suivante (même navigateur). */
     function nouvelleVisite(): DevisStore {
