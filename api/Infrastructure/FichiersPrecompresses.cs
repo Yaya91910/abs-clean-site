@@ -24,10 +24,11 @@ public static class FichiersPrecompresses
                 || !Extensions.Any(e => chemin.EndsWith(e, StringComparison.OrdinalIgnoreCase)))
                 return suite(http);
 
-            var acceptes = http.Request.Headers.AcceptEncoding.ToString();
+            // « br;q=0 » veut dire refusé : on lit la qualité, pas seulement la présence du nom.
+            var acceptes = http.Request.GetTypedHeaders().AcceptEncoding;
             foreach (var (encodage, suffixe) in Encodages)
             {
-                if (!acceptes.Contains(encodage, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!acceptes.Any(a => a.Value.Equals(encodage, StringComparison.OrdinalIgnoreCase) && (a.Quality ?? 1) > 0)) continue;
                 if (!env.WebRootFileProvider.GetFileInfo(chemin + suffixe).Exists) continue;
                 Types.TryGetContentType(chemin, out var type);
                 http.Items[CleOriginal] = (type ?? "application/octet-stream", encodage);

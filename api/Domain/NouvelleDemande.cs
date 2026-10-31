@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace AbsClean.Api.Domain;
@@ -59,9 +60,9 @@ public static partial class ValidationDemande
         // dans l'objet de l'e-mail du gérant et dans le SMS. Le commentaire garde ses retours à la ligne.
         foreach (var (champ, valeur) in new[] { ("nom", d.Nom), ("prenom", d.Prenom), ("telephone", d.Telephone), ("email", d.Email),
                      ("adresse", d.Adresse), ("codePostal", d.CodePostal), ("ville", d.Ville), ("acces", d.Acces) })
-            if (valeur is not null && valeur.Any(char.IsControl))
+            if (valeur is not null && ContientInterdit(valeur, multiligne: false))
                 Erreur(champ, "Caractères non autorisés.");
-        if (d.Commentaire is not null && d.Commentaire.Any(c => char.IsControl(c) && c is not ('\n' or '\r' or '\t')))
+        if (d.Commentaire is not null && ContientInterdit(d.Commentaire, multiligne: true))
             Erreur("commentaire", "Caractères non autorisés.");
 
         Requis("nom", d.Nom, 60, "Le nom");
@@ -96,10 +97,37 @@ public static partial class ValidationDemande
         return TelephoneRegex().IsMatch(chiffres) ? chiffres : null;
     }
 
-    [GeneratedRegex(@"^0[1-79]\d{8}$")]
+    /// <summary>
+    /// Caractères refusés : contrôle (sauf retour à la ligne et tabulation dans un texte sur plusieurs lignes),
+    /// caractères invisibles de mise en forme — dont ceux qui inversent le sens du texte (U+202E…) et feraient
+    /// lire au gérant un autre nom ou un autre numéro dans l'e-mail, le SMS ou le PDF —, séparateurs de ligne
+    /// Unicode et moitiés de caractère orphelines. Les liants U+200C et U+200D (écritures, émojis) restent permis.
+    /// </summary>
+    public static bool ContientInterdit(string valeur, bool multiligne)
+    {
+        for (var i = 0; i < valeur.Length; i++)
+        {
+            var c = valeur[i];
+            if (char.IsHighSurrogate(c) && i + 1 < valeur.Length && char.IsLowSurrogate(valeur[i + 1]))
+            {
+                i++;
+                continue;
+            }
+            if (char.IsSurrogate(c)) return true;
+            if (multiligne && c is '\n' or '\r' or '\t') continue;
+            if (c is '‌' or '‍') continue;
+            if (char.GetUnicodeCategory(c) is UnicodeCategory.Control or UnicodeCategory.Format
+                or UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator)
+                return true;
+        }
+        return false;
+    }
+
+    // [0-9] et non \d : en .NET, \d accepte aussi les chiffres d'autres écritures (« ٠٦١٢… »), illisibles pour le SMS et le gérant.
+    [GeneratedRegex(@"^0[1-79][0-9]{8}$")]
     private static partial Regex TelephoneRegex();
 
-    [GeneratedRegex(@"^\d{5}$")]
+    [GeneratedRegex(@"^[0-9]{5}$")]
     private static partial Regex CodePostalRegex();
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]

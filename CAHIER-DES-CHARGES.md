@@ -348,7 +348,7 @@ Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le 
 | #21, #22 | Cette section d'état, bilan de santé hebdomadaire (`docs/BILAN-HEBDO.md`) |
 | #23 | Fiche client : numéro `CLI-00001` sans doublon, deux PDF distincts (devis client / fiche d'intervention gérant), bandeau « Client existant », accueil « Bon retour » sur le site |
 
-Tests : API 128 (xUnit), site 31 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+Tests : API 156 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
 
 ### Reste à faire
 
@@ -383,6 +383,10 @@ Tests : API 128 (xUnit), site 31 (Vitest), Playwright 23 (dont accessibilité ax
 - **Tarifs** : 3 nouvelles tentatives espacées si `/api/tarifs` échoue (sinon l'estimation restait vide jusqu'au rechargement).
 - **Précompression** : le Dockerfile lance `web/scripts/precompresser.mjs` après `ng build` (Brotli niveau 11 + gzip) ; l'API sert ces fichiers (`FichiersPrecompresses`), la compression à la volée ne sert qu'en l'absence de fichier précompressé.
 - **Référencement** : `/robots.txt` et `/sitemap.xml` générés par l'API avec `Site__Url` ; données structurées JSON-LD (`LocalBusiness`) dans `index.html`, sans adresse ni téléphone tant qu'ils ne sont pas fournis ; `X-Robots-Tag: noindex` sur `/admin/…`.
+- **Saisie durcie** (API et formulaire, mêmes règles) : refus des caractères invisibles de mise en forme (inversion du sens du texte U+202E, espaces sans largeur…), des séparateurs de ligne Unicode et des moitiés de caractère orphelines ; liants U+200C/U+200D permis (émojis). Téléphone et code postal en chiffres latins `[0-9]` (en .NET, `\d` accepte aussi « ٠٦١٢… »).
+- **Codes parrain de forme impossible** (hors `ABS-` + 1 à 12 lettres ou chiffres) : inconnus d'office, sans requête en base ni copie de la saisie dans les journaux ; le site ne les vérifie même pas auprès de l'API.
+- **Limite par IP** : une adresse IPv6 compte pour tout son bloc /64 (`Services.CleClient`), sinon un abonné contournerait la limite en changeant d'adresse.
+- **Envoi du formulaire** abandonné après 30 s sans réponse (message « réessayez ») ; `/api/tarifs` gardé 5 min par le navigateur ; `br;q=0` respecté pour les fichiers précompressés.
 - **En-têtes** : `Permissions-Policy` étendue, `X-Permitted-Cross-Domain-Policies: none`, CSP avec `frame-src 'none'` et `worker-src 'none'`.
 
 ### Lancer et tester (sur ce Mac)

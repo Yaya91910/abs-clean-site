@@ -28,8 +28,8 @@ public sealed class ServiceParrainage(
     public string LienValidation(int demandeId, string jeton) =>
         $"{site.Value.Base}/admin/intervention#demande={demandeId}&jeton={Uri.EscapeDataString(jeton)}";
 
-    public Task<bool> ExisteAsync(string code, CancellationToken ct) =>
-        db.Demandes.AnyAsync(d => d.CodeParrainPersonnel == code, ct);
+    public async Task<bool> ExisteAsync(string code, CancellationToken ct) =>
+        CodeParrain.FormatValide(code) && await db.Demandes.AnyAsync(d => d.CodeParrainPersonnel == code, ct);
 
     /// <summary>QR code du lien de parrainage, en SVG, niveau de correction M.</summary>
     public string QrSvg(string code) => QrSvgDe(Lien(code));

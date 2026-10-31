@@ -1,4 +1,6 @@
 using System.IO.Compression;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -132,6 +134,21 @@ public static class Services
 
     private static Func<HttpContext, RateLimitPartition<string>> ParIp(int limite, TimeSpan fenetre) =>
         http => RateLimitPartition.GetFixedWindowLimiter(
-            http.Connection.RemoteIpAddress?.ToString() ?? "inconnue",
+            CleClient(http.Connection.RemoteIpAddress),
             _ => new FixedWindowRateLimiterOptions { PermitLimit = limite, Window = fenetre, QueueLimit = 0 });
+
+    /// <summary>
+    /// Clé de limitation : l'adresse IPv4, ou le bloc /64 d'une adresse IPv6. Un abonné IPv6 dispose en général
+    /// de tout un bloc /64 : compter adresse par adresse lui permettrait de contourner la limite en en changeant.
+    /// </summary>
+    public static string CleClient(IPAddress? ip)
+    {
+        if (ip is null) return "inconnue";
+        if (ip.IsIPv4MappedToIPv6) ip = ip.MapToIPv4();
+        if (ip.AddressFamily != AddressFamily.InterNetworkV6) return ip.ToString();
+
+        var octets = ip.GetAddressBytes();
+        Array.Clear(octets, 8, 8);
+        return $"{new IPAddress(octets)}/64";
+    }
 }

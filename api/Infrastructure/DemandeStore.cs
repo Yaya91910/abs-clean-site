@@ -118,6 +118,11 @@ public sealed class DemandeStore(AbsCleanDb db, TimeProvider horloge, ILogger<De
     private async Task<(CodeParrainSaisi, Demande?)> VerifierCodeSaisiAsync(string? code, Demande filleul, CancellationToken ct)
     {
         if (code is null) return (CodeParrainSaisi.Aucun, null);
+        if (!CodeParrain.FormatValide(code))
+        {
+            log.LogInformation("Code de parrainage mal formé ignoré ({Longueur} caractères).", code.Length);
+            return (CodeParrainSaisi.Inconnu, null);
+        }
 
         var parrain = await db.Demandes.AsNoTracking().FirstOrDefaultAsync(x => x.CodeParrainPersonnel == code, ct);
         if (parrain is null)

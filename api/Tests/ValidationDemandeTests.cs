@@ -56,6 +56,15 @@ public class ValidationDemandeTests
         { "consentement", Valide() with { Consentement = false } },
         { "quantites", Valide() with { NbVitres = 0, NbBaies = 0, NbVelux = 0 } },
         { "nbVitres", Valide() with { NbVitres = 100 } },
+        // Chiffres d'une autre écriture, invisibles à l'œil dans un formulaire.
+        { "telephone", Valide() with { Telephone = "٠٦١٢٣٤٥٦٧٨" } },
+        { "codePostal", Valide() with { CodePostal = "٩١٠٠٠" } },
+        // Inversion du sens du texte (U+202E), espace sans largeur, séparateur de ligne Unicode, moitié de caractère orpheline.
+        { "nom", Valide() with { Nom = "Martin\u202Eenitram" } },
+        { "telephone", Valide() with { Telephone = "06 12 34\u200B 56 78" } },
+        { "ville", Valide() with { Ville = "Évry\u2028Nouveau devis" } },
+        { "commentaire", Valide() with { Commentaire = "Merci\u202E !" } },
+        { "prenom", Valide() with { Prenom = "Léa\uD83D" } },
     };
 
     [Theory]
@@ -71,5 +80,11 @@ public class ValidationDemandeTests
     public void Commentaire_de_1000_caracteres_accepte()
     {
         Assert.Empty(ValidationDemande.Valider(Valide() with { Commentaire = new string('a', 1000) }));
+    }
+
+    [Fact]
+    public void Emojis_et_liants_acceptes_dans_le_commentaire()
+    {
+        Assert.Empty(ValidationDemande.Valider(Valide() with { Commentaire = "Famille 👨\u200D👩\u200D👧 à la maison.\nMerci 🙏" }));
     }
 }

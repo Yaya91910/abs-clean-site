@@ -227,6 +227,26 @@ public class SiteTests(SiteFactory factory) : IClassFixture<SiteFactory>
     }
 
     [Fact]
+    public async Task Brotli_refuse_par_le_navigateur_n_est_pas_servi()
+    {
+        var requete = new HttpRequestMessage(HttpMethod.Get, "/main-YZCV272D.js");
+        requete.Headers.AcceptEncoding.ParseAdd("br;q=0, gzip");
+        var reponse = await factory.CreerClient().SendAsync(requete);
+
+        Assert.Equal(HttpStatusCode.OK, reponse.StatusCode);
+        Assert.Equal(["gzip"], reponse.Content.Headers.ContentEncoding);
+    }
+
+    [Fact]
+    public async Task La_grille_des_tarifs_est_gardee_cinq_minutes()
+    {
+        var reponse = await factory.CreerClient().GetAsync("/api/tarifs");
+
+        Assert.Equal(HttpStatusCode.OK, reponse.StatusCode);
+        Assert.Equal("public, max-age=300", reponse.Headers.CacheControl?.ToString());
+    }
+
+    [Fact]
     public async Task Robots_et_plan_du_site_utilisent_l_adresse_publique()
     {
         var client = factory.CreerClient();

@@ -16,18 +16,31 @@ const email = (c: AbstractControl): ValidationErrors | null =>
 
 const codePostal = (c: AbstractControl): ValidationErrors | null => (!c.value || /^\d{5}$/.test(c.value.trim()) ? null : { codePostal: true });
 
+/**
+ * Mêmes caractères refusés que l'API (ValidationDemande.ContientInterdit) : contrôle, mise en forme invisible
+ * (inversion du sens du texte…), séparateurs de ligne Unicode, moitiés de caractère orphelines.
+ * Les liants U+200C et U+200D (émojis) restent permis ; le commentaire garde ses retours à la ligne.
+ */
+const INTERDITS_LIGNE = /(?![\u200C\u200D])[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Cs}]/u;
+const INTERDITS_TEXTE = /(?![\n\r\t\u200C\u200D])[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Cs}]/u;
+const caracteres =
+  (interdits: RegExp) =>
+  (c: AbstractControl): ValidationErrors | null =>
+    interdits.test(c.value ?? '') ? { caracteres: true } : null;
+const ligne = caracteres(INTERDITS_LIGNE);
+
 export function creerFormulaireCoordonnees() {
   return new FormGroup({
-    nom: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(60)] }),
-    prenom: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(60)] }),
-    telephone: new FormControl('', { nonNullable: true, validators: [requis, telephoneFr] }),
-    email: new FormControl('', { nonNullable: true, validators: [requis, email, Validators.maxLength(254)] }),
-    adresse: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(200)] }),
-    codePostal: new FormControl('', { nonNullable: true, validators: [requis, codePostal] }),
-    ville: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(100)] }),
-    acces: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
+    nom: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(60), ligne] }),
+    prenom: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(60), ligne] }),
+    telephone: new FormControl('', { nonNullable: true, validators: [requis, telephoneFr, ligne] }),
+    email: new FormControl('', { nonNullable: true, validators: [requis, email, Validators.maxLength(254), ligne] }),
+    adresse: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(200), ligne] }),
+    codePostal: new FormControl('', { nonNullable: true, validators: [requis, codePostal, ligne] }),
+    ville: new FormControl('', { nonNullable: true, validators: [requis, Validators.maxLength(100), ligne] }),
+    acces: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200), ligne] }),
     creneaux: new FormControl<Creneau[]>([], { nonNullable: true }),
-    commentaire: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(1000)] }),
+    commentaire: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(1000), caracteres(INTERDITS_TEXTE)] }),
     consentement: new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
     /** Champ piège (honeypot) : toujours vide pour un humain. */
     siteWeb: new FormControl('', { nonNullable: true }),
@@ -54,6 +67,8 @@ export type ChampAvecErreur = keyof typeof MESSAGES;
 /** Message à afficher pour les erreurs d'un champ ; une erreur renvoyée par le serveur est affichée telle quelle. */
 export function messageErreur(champ: ChampAvecErreur, erreurs: ValidationErrors): string {
   if (erreurs['serveur']) return erreurs['serveur'];
+  // Le plus précis d'abord : un caractère invisible rend aussi le numéro « invalide », sans dire pourquoi.
+  if (erreurs['caracteres']) return 'Caractères non autorisés.';
   const cle = Object.keys(erreurs)[0];
   const messages: Record<string, string> = MESSAGES[champ];
   return messages[cle === 'requiredTrue' ? 'required' : cle] ?? 'Valeur invalide.';

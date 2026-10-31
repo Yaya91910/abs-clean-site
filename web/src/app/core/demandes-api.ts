@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, timeout } from 'rxjs';
 import { Frequence, Profil } from './tarifs-api';
 
 export type Creneau = 'semaineMatin' | 'semaineApresMidi' | 'samedi';
@@ -49,6 +49,8 @@ export type ResultatEnvoi =
   | { statut: 'trop-de-demandes' }
   | { statut: 'erreur' };
 
+export const DELAI_MAX_ENVOI_MS = 30_000;
+
 /** POST /api/demandes (CAHIER-DES-CHARGES.md §9). */
 @Injectable({ providedIn: 'root' })
 export class DemandesApi {
@@ -56,8 +58,10 @@ export class DemandesApi {
 
   envoyer(demande: NouvelleDemande): Observable<ResultatEnvoi> {
     return this.http.post<DemandeAcceptee>('/api/demandes', demande).pipe(
+      // Réseau qui ne répond plus (tunnel, Wi-Fi perdu) : sans délai maximal, le bouton resterait sur « Envoi… ».
+      timeout(DELAI_MAX_ENVOI_MS),
       map((r): ResultatEnvoi => ({ statut: 'ok', ...r })),
-      catchError((e: HttpErrorResponse) => of(versResultat(e))),
+      catchError((e: unknown) => of(e instanceof HttpErrorResponse ? versResultat(e) : { statut: 'erreur' as const })),
     );
   }
 }

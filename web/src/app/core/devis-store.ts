@@ -123,6 +123,11 @@ export class DevisStore {
     this.codeParrain.set(normalise);
     this.codeReconnu.set(null);
     if (!normalise) return;
+    // Forme impossible (même règle que CodeParrain.FormatValide) : inconnu d'office, sans interroger l'API.
+    if (!/^ABS-[A-Z0-9]{1,12}$/.test(normalise)) {
+      this.codeReconnu.set(false);
+      return;
+    }
     this.parrainageApi.existe(normalise).subscribe((existe) => {
       // Ignore une réponse arrivée après une nouvelle saisie.
       if (this.codeParrain() === normalise) this.codeReconnu.set(existe);

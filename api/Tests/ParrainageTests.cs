@@ -115,6 +115,16 @@ public class ParrainageTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task Code_mal_forme_ignore_sans_bloquer_la_demande()
+    {
+        var reponse = await EnvoyerAsync(Client("Hector", codeParrainage: "ABS-" + new string('Z', 5000)));
+
+        Assert.Equal("ignore", Saisi(reponse));
+        var verification = await factory.CreerClient().GetAsync("/api/parrainage/ABS-%27%20OR%201%3D1");
+        Assert.Equal(HttpStatusCode.NotFound, verification.StatusCode);
+    }
+
+    [Fact]
     public async Task Auto_parrainage_refuse()
     {
         var parrain = Client("Ines");
