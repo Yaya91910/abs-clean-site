@@ -348,7 +348,7 @@ Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le 
 | #21, #22 | Cette section d'état, bilan de santé hebdomadaire (`docs/BILAN-HEBDO.md`) |
 | #23 | Fiche client : numéro `CLI-00001` sans doublon, deux PDF distincts (devis client / fiche d'intervention gérant), bandeau « Client existant », accueil « Bon retour » sur le site |
 
-Tests : API 151 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+Tests : API 156 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
 
 ### Reste à faire
 
