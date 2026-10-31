@@ -169,7 +169,7 @@ Anti-abus : champ piège invisible (*honeypot*) + limitation de débit par IP su
 4. Génération du **PDF** (QuestPDF) : logo, numéro de devis unique (ex. `ABS-2026-0001`), date, coordonnées client, détail des lignes, total « à partir de », mention d'estimation, coordonnées ABS clean (`À FOURNIR` : SIRET, adresse, téléphone, e-mail).
 5. **E-mail au client** avec le PDF en pièce jointe.
 6. **E-mail au gérant** avec le PDF et toutes les coordonnées.
-7. **SMS au gérant** : `Nouveau devis ABS : {Prénom} {Nom}, {Ville}, à partir de {total} € — {téléphone}` (≤ 160 caractères).
+7. **SMS au gérant** : `Nouveau devis ABS : {Prénom} {Nom}, {Ville}, à partir de {total} € - {téléphone}` (≤ 160 caractères, alphabet SMS standard : un seul SMS facturé).
 8. Chaque envoi est indépendant : si le SMS échoue, les e-mails partent quand même ; l'échec est journalisé et la demande reste enregistrée.
 9. Réponse au navigateur uniquement après l'enregistrement réussi.
 
@@ -347,8 +347,9 @@ Bilan de santé hebdomadaire : consignes dans `docs/BILAN-HEBDO.md` (« fais le 
 | #15, #18, #19, #20 | Mises à jour Dependabot triées, règles d'exclusion, coverlet retiré |
 | #21, #22 | Cette section d'état, bilan de santé hebdomadaire (`docs/BILAN-HEBDO.md`) |
 | #23 | Fiche client : numéro `CLI-00001` sans doublon, deux PDF distincts (devis client / fiche d'intervention gérant), bandeau « Client existant », accueil « Bon retour » sur le site |
+| #29 | Robustesse : saisie durcie (caractères invisibles, chiffres latins), codes parrain de forme impossible ignorés, limite IPv6 par bloc /64, envoi borné à 30 s |
 
-Tests : API 156 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
+Tests : API 158 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité axe). Lighthouse mobile : 100 / 100 / 100 / 100 sur la version de production.
 
 ### Reste à faire
 
@@ -358,7 +359,7 @@ Tests : API 156 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité ax
 4. **Comptes** : liste de `docs/SECURITE.md` (2FA partout, branche `main` protégée).
 5. **Base locale** `abs_clean_dev` : migration `Clients` (#23) pas encore appliquée (sandbox) — `dotnet ef database update --project api`.
 6. Piste à décider : **code parrain par client** plutôt que par demande (aujourd'hui un client fidèle reçoit un nouveau code à chaque devis).
-7. Pistes non demandées : écran d'administration (liste des demandes, remise utilisée `RemiseUtiliseeLe`), purge des anciennes demandes, tiret « — » du SMS (2 SMS facturés en Unicode, « - » tiendrait en 1).
+7. Pistes non demandées : écran d'administration (liste des demandes, remise utilisée `RemiseUtiliseeLe`), purge des anciennes demandes ; à fort volume, SMS récapitulatif quotidien plutôt qu'un SMS par demande (≈ 0,045 € le SMS).
 
 ### Choix importants (ne pas défaire sans raison)
 
@@ -387,6 +388,7 @@ Tests : API 156 (xUnit), site 37 (Vitest), Playwright 23 (dont accessibilité ax
 - **Codes parrain de forme impossible** (hors `ABS-` + 1 à 12 lettres ou chiffres) : inconnus d'office, sans requête en base ni copie de la saisie dans les journaux ; le site ne les vérifie même pas auprès de l'API.
 - **Limite par IP** : une adresse IPv6 compte pour tout son bloc /64 (`Services.CleClient`), sinon un abonné contournerait la limite en changeant d'adresse.
 - **Envoi du formulaire** abandonné après 30 s sans réponse (message « réessayez ») ; `/api/tarifs` gardé 5 min par le navigateur ; `br;q=0` respecté pour les fichiers précompressés.
+- **SMS en un seul envoi facturé** (`Sms.NouveauDevis`) : alphabet SMS standard (GSM 7 bits) — « - » au lieu de « — », lettres hors alphabet sans accent (ê → e, ç → c, ’ → '), émojis en « ? », longueur comptée avec € à 2 ; sinon le message passait en Unicode (70 caractères) et coûtait 2 SMS.
 - **En-têtes** : `Permissions-Policy` étendue, `X-Permitted-Cross-Domain-Policies: none`, CSP avec `frame-src 'none'` et `worker-src 'none'`.
 
 ### Lancer et tester (sur ce Mac)

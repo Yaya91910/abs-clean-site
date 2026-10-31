@@ -14,7 +14,7 @@ public class SmsTests
     public void Message_suit_le_modele_du_cahier_des_charges()
     {
         Assert.Equal(
-            "Nouveau devis ABS : Léa Martin, Évry-Courcouronnes, à partir de 265 € — 06 12 34 56 78",
+            "Nouveau devis ABS : Léa Martin, Évry-Courcouronnes, à partir de 265 € - 06 12 34 56 78",
             Sms.NouveauDevis(Demande()));
     }
 
@@ -23,9 +23,10 @@ public class SmsTests
     {
         var texte = Sms.NouveauDevis(Demande(prenom: new string('P', 60), nom: new string('N', 60), ville: new string('V', 100), total: 13365m));
 
-        Assert.True(texte.Length <= Sms.LongueurMax, $"{texte.Length} caractères");
+        Assert.True(Sms.Longueur(texte) <= Sms.LongueurMax, $"{Sms.Longueur(texte)} caractères");
+        Assert.True(Sms.EstGsm7(texte));
         Assert.StartsWith("Nouveau devis ABS : ", texte);
-        Assert.EndsWith("à partir de 13 365 € — 06 12 34 56 78", texte);
+        Assert.EndsWith("à partir de 13 365 € - 06 12 34 56 78", texte);
     }
 
     [Theory]
@@ -44,5 +45,20 @@ public class SmsTests
     {
         Assert.True(Sms.EstGsm7("Nouveau devis ABS : 265 €"));
         Assert.False(Sms.EstGsm7("265 € — 06"));
+    }
+
+    [Fact]
+    public void Le_message_tient_dans_un_seul_sms_meme_avec_des_lettres_hors_alphabet()
+    {
+        var texte = Sms.NouveauDevis(Demande(prenom: "Hélène-Françoise 🌸", nom: "N’Diaye-Benoît", ville: "L’Haÿ-les-Roses"));
+
+        Assert.Equal("Nouveau devis ABS : Hélène-Francoise ? N'Diaye-Benoit, L'Hay-les-Roses, à partir de 265 € - 06 12 34 56 78", texte);
+        Assert.True(Sms.EstGsm7(texte));
+    }
+
+    [Fact]
+    public void Le_symbole_euro_compte_double()
+    {
+        Assert.Equal(6, Sms.Longueur("265 €"));
     }
 }
